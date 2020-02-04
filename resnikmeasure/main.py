@@ -15,10 +15,10 @@ def main():
     parent_parser = argparse.ArgumentParser(add_help=False)
 
     root_parser = argparse.ArgumentParser(prog='resnikmeasure')
-#    subparsers = root_parser.add_subparsers(title="corpora", dest="corpora")
+    subparsers = root_parser.add_subparsers(title="actions", dest="actions")
 
     # VERB LIST
-    parser_objectlist = root_parser.add_parser('extract-dobjects', parents=[parent_parser],
+    parser_objectlist = subparsers.add_parser('extract-dobjects', parents=[parent_parser],
                                                description='set of utilities to extract the list of direct objects from'
                                                            'required corpora',
                                                help='set of utilities to extract the list of direct objects from'
