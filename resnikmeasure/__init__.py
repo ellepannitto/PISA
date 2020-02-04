@@ -1,5 +1,5 @@
 import argparse
-from preprocess import extract
+from .preprocess import extract
 
 def _extract_dobjects(args):
     output_path = args.output_dir
@@ -14,7 +14,7 @@ def main():
 
     parent_parser = argparse.ArgumentParser(add_help=False)
 
-    root_parser = argparse.ArgumentParser(prog='resniknew')
+    root_parser = argparse.ArgumentParser(prog='resnikmeasure')
 #    subparsers = root_parser.add_subparsers(title="corpora", dest="corpora")
 
     # VERB LIST
