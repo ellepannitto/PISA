@@ -6,7 +6,7 @@ def _extract_dobjects(args):
     verbs_filepath = args.verbs_input
     corpus_filepath = args.corpus
 
-    extract.extractDobj(output_path, verbs_filepath, corpus_filepath)
+    extract.extractDobj(output_path, verbs_filepath, corpus_dirpath)
 
 
 
@@ -29,7 +29,7 @@ def main():
 
     parser_objectlist.add_argument("-v", "--verbs-input", help="path to file containing verbs")
 
-    parser_objectlist.add_argument("-c", "--corpus", help="path to file containing corpus")
+    parser_objectlist.add_argument("-c", "--corpus", help="path to dir containing corpus")
 
     parser_objectlist.set_defaults(func=_extract_dobjects)
 
