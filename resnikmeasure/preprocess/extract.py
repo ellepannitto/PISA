@@ -43,7 +43,7 @@ def extractDobj(output_path, verbs_filepath, corpus_dirpath):
                         if len(rel) == 2:
                             rel, head = rel
                             head = int(head)
-                            if rel == "dobj":
+                            if rel == "dobj" and pos[0] == "N":
                                 lookfor.append((head, lemma))
                             sentence[position] = lemma
             if len(lookfor) > 0:
