@@ -5,7 +5,7 @@ import sys
 nouns = {}
 with open("DSM_vocab.txt") as fin:
     for line in fin:
-        nouns[line.strip()] = 0
+        nouns[line.strip().split()[0]] = 0
 
 ukwac_folders = ["ukwac{}/".format(i) for i in range(1, 6)]
 

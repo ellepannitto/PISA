@@ -35,10 +35,14 @@ import sys
 #                 if word in nouns:
 #                     print(word, file=fout)
 
+threshold = 300
 nouns = set()
-with open("DSM_vocab.txt") as fin:
+with open("DSM_vocab_freqs.txt") as fin:
     for line in fin:
-        nouns.add(line.strip())
+        noun, f = line.strip().split()
+        f = int(f)
+        if f > threshold:
+            nouns.add(noun)
 
 
 for filename in os.listdir(sys.argv[1]):
@@ -49,7 +53,8 @@ for filename in os.listdir(sys.argv[1]):
         tot = 0
         found_f = 0
         tot_f = 0
-        with open(sys.argv[1]+"/"+filename) as fin, open(sys.argv[1]+"/"+"filtered.{}".format(filename), "w") as fout:
+        with open(sys.argv[1]+"/"+filename) as fin, open(sys.argv[1]+"/"+"filtered.{}".format(filename), "w") as fout, \
+            open(sys.argv[1]+"/"+"filtered.not_found.{}".format(filename), "w") as fout_not_found:
             for line in fin:
                 noun, freq = line.strip().split()
                 freq = int(freq)
@@ -57,6 +62,8 @@ for filename in os.listdir(sys.argv[1]):
                     print(line.strip(), file=fout)
                     found+=1
                     found_f += freq
+                else:
+                    print(line.strip(), file=fout_not_found)
                 tot+=1
                 tot_f +=freq
         print("{} {} {} {:.2f} {} {} {:.2f}".format(verb, found, tot, found*100/tot, found_f, tot_f, found_f*100/tot_f))
