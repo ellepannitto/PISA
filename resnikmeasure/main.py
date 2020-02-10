@@ -1,5 +1,6 @@
 import argparse
 from .preprocess import extract
+from .measures import wn_resnik
 
 def _extract_dobjects(args):
     output_path = args.output_dir
@@ -7,6 +8,12 @@ def _extract_dobjects(args):
     corpus_filepath = args.corpus
 
     extract.extractDobj(output_path, verbs_filepath, corpus_dirpath)
+
+def _wn_resnik(args):
+    output_path = args.output_dir
+    input_path = args.input_dir
+
+    wn_resnik.compute_measure(input_path, output_path)
 
 
 
@@ -32,6 +39,17 @@ def main():
     parser_objectlist.add_argument("-c", "--corpus", help="path to dir containing corpus")
 
     parser_objectlist.set_defaults(func=_extract_dobjects)
+
+    # MEASURES
+
+    parser_wnresnik = subparsers.add_parser("wn-resnik", parents=[parent_parser],
+                                            description='computes standard Resnik measure',
+                                            help='computes standard Resnik measure')
+    parser_wnresnik.add_argument("-i", "--input-dir", required=True,
+                                 help="path to input directory containing one file per verb")
+    parser_wnresnik.add_argument("-o", "--output-dir", default="data/wn_resnik/",
+                                 help="path to output directory, default is `data/wn_resnik/`")
+    parser_wnresnik.set_defaults(func=_wn_resnik)
 
     args = root_parser.parse_args()
     args.func(args)
