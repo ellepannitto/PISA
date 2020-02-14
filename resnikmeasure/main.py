@@ -1,6 +1,6 @@
 import argparse
 from .preprocess import extract
-from .measures import wn_resnik
+from .measures import wn_resnik, distributional_measures
 
 def _extract_dobjects(args):
     output_path = args.output_dir
@@ -15,6 +15,12 @@ def _wn_resnik(args):
 
     wn_resnik.compute_measure(input_path, output_path)
 
+
+def _dist_measure(args):
+    output_path = args.output_dir
+    input_path = args.input_dir
+
+    distributional_measures.compute_measure(input_path, output_path)
 
 
 def main():
@@ -50,6 +56,15 @@ def main():
     parser_wnresnik.add_argument("-o", "--output-dir", default="data/wn_resnik/",
                                  help="path to output directory, default is `data/wn_resnik/`")
     parser_wnresnik.set_defaults(func=_wn_resnik)
+
+    parser_distributional = subparsers.add_parser("dist-measure", parents=[parent_parser],
+                                                  description='computes distributional measure',
+                                                  help='computes distributional measure')
+    parser_distributional.add_argument("-i", "--input-dir", required=True,
+                                 help="path to input directory containing one file per verb")
+    parser_distributional.add_argument("-o", "--output-dir", default="data/dist_measures/",
+                                 help="path to output directory, default is `data/dist_measures/`")
+    parser_distributional.set_defaults(func=_dist_measure)
 
     args = root_parser.parse_args()
     args.func(args)
