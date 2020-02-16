@@ -3,8 +3,23 @@ import numpy as np
 from scipy.spatial.distance import cosine
 import collections
 import tqdm
+from multiprocessing import Pool
 
-def compute_measure(input_path, output_path, nouns_file, algo):
+def f(verb, output_path, algo, folder, nouns_per_verb, noun_vectors):
+    print("START", verb, output_path, algo, folder)
+    with open(output_path + algo + "." + folder + "." + verb, "w") as fout:
+        for noun1 in nouns_per_verb[verb]:
+            for noun2 in nouns_per_verb[verb]:
+                if noun1 > noun2:
+                    cos = 1 - cosine(noun_vectors[noun1], noun_vectors[noun2])
+                    print(noun1, noun2, cos, file=fout)
+    print("END", verb, output_path, algo, folder)
+
+def parallel_f(tup):
+    return f(*tup)
+
+
+def compute_measure(input_path, output_path, nouns_file, n_workers):
     os.makedirs(output_path, exist_ok=True)
 
     nouns = set()
@@ -14,7 +29,6 @@ def compute_measure(input_path, output_path, nouns_file, algo):
             nouns.add(line[0])
 
     nouns_per_verb = {}
-    pairs = collections.defaultdict(int)
     for filename in os.listdir(input_path):
         verb = filename.split(".")[-1]
         print(verb)
@@ -22,16 +36,12 @@ def compute_measure(input_path, output_path, nouns_file, algo):
         with open(input_path+filename) as fin:
             for line in fin:
                 nouns_per_verb[verb].append(line.strip().split()[0])
-            # for noun1 in nouns_per_verb[verb]:
-            #     for noun2 in nouns_per_verb[verb]:
-            #         if noun1 > noun2:
-            #             pairs[(noun1, noun2)]+=1
 
 
-    if algo in ["word2vec", "word2vecf"]:
+    for algo in ["word2vec", "word2vecf"]:
         models_dir = "/extra/DSM/07_models/{}".format(algo)
         for folder in tqdm.tqdm(os.listdir(models_dir)):
-            print(folder)
+            print("WORKING ON FOLDER: ", folder)
             with open(models_dir + "/" + folder + "/targets_vectors.decoded") as fin_model:
                 noun_vectors = {}
                 fin_model.readline()
@@ -46,23 +56,21 @@ def compute_measure(input_path, output_path, nouns_file, algo):
                             pass
 
             min_len = min([len(vector) for vector in noun_vectors.values()])
-            print(min_len)
+            print("LEN VECTORS: ", min_len)
             for n in noun_vectors:
                 v = noun_vectors[n][-min_len:]
                 noun_vectors[n] = np.array(v)
 
-            for verb in tqdm.tqdm(nouns_per_verb):
-                with open(output_path + algo + "." + folder + "." + verb, "w") as fout:
-                    for noun1 in tqdm.tqdm(nouns_per_verb[verb]):
-                        for noun2 in nouns_per_verb[verb]:
-                            if noun1 > noun2:
-                                cos = 1 - cosine(noun_vectors[noun1], noun_vectors[noun2])
-                                print(noun1, noun2, cos, file=fout)
 
-    elif algo in ["SVD"]:
+            lista_verbi = [(verb, output_path, algo, folder, nouns_per_verb, noun_vectors) for verb in nouns_per_verb.keys()]
+            with Pool(n_workers) as p:
+                p.map(parallel_f, lista_verbi)
+
+
+    for algo in ["SVD"]:
         models_dir = "/extra/DSM/07_models/{}".format(algo)
         for folder in tqdm.tqdm(os.listdir(models_dir)):
-            print(folder)
+            print("WORKING ON FOLDER: ", folder)
             with open(models_dir + "/" + folder + "/counts-ppmi-svd.decoded") as fin_model:
                 noun_vectors = {}
                 fin_model.readline()
@@ -77,15 +85,11 @@ def compute_measure(input_path, output_path, nouns_file, algo):
                             pass
 
             min_len = min([len(vector) for vector in noun_vectors.values()])
-            print(min_len)
+            print("LEN VECTORS: ", min_len)
             for n in noun_vectors:
                 v = noun_vectors[n][-min_len:]
                 noun_vectors[n] = np.array(v)
 
-            for verb in tqdm.tqdm(nouns_per_verb):
-                with open(output_path + algo + "." + folder + "." + verb, "w") as fout:
-                    for noun1 in tqdm.tqdm(nouns_per_verb[verb]):
-                        for noun2 in nouns_per_verb[verb]:
-                            if noun1 > noun2:
-                                cos = 1 - cosine(noun_vectors[noun1], noun_vectors[noun2])
-                                print(noun1, noun2, cos, file=fout)
+            lista_verbi = [(verb, output_path, algo, folder, nouns_per_verb, noun_vectors) for verb in nouns_per_verb.keys()]
+            with Pool(n_workers) as p:
+                p.map(parallel_f, lista_verbi)

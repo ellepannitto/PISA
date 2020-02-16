@@ -21,7 +21,7 @@ def _dist_measure(args):
     input_path = args.input_dir
     nouns_fpath = args.nouns_fpath
 
-    distributional_measures.compute_measure(input_path, output_path, nouns_fpath, args.algorithm)
+    distributional_measures.compute_measure(input_path, output_path, nouns_fpath, args.num_workers)
 
 
 def main():
@@ -67,8 +67,8 @@ def main():
                                  help="path to output directory, default is `data/dist_measures/`")
     parser_distributional.add_argument("-n", "--nouns-fpath", required=True,
                                        help="path to file containing required nouns")
-    parser_distributional.add_argument("-a", "--algorithm", required=True,
-                                       help="chosen models, options are word2vec, word2vecf and SVD")
+    parser_distributional.add_argument("-w", "--num-workers", default=1, type=int,
+                                       help="number of workers for multiprocessing")
     parser_distributional.set_defaults(func=_dist_measure)
 
     args = root_parser.parse_args()
