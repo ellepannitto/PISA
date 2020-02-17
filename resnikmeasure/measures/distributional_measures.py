@@ -5,6 +5,8 @@ import itertools
 import tqdm
 from multiprocessing import Pool
 import functools
+import heapq
+import gzip
 
 def f(verb, output_path, algo, folder, nouns_per_verb, noun_vectors):
     print("START", verb, output_path, algo, folder)
@@ -16,20 +18,37 @@ def f(verb, output_path, algo, folder, nouns_per_verb, noun_vectors):
                     print(noun1, noun2, cos, file=fout)
     print("END", verb, output_path, algo, folder)
 
+def tuples_generator(nouns_per_verb):
+    files = [itertools.combinations(nouns_per_verb[verb], 2) for verb in nouns_per_verb]
+    last_tuple = None
+    for tuple in heapq.merge(*files):
+        if not tuple == last_tuple:
+            yield tuple
+            last_tuple = tuple
+
 def grouper(iterable, n, fillvalue=None):
     "Collect data into fixed-length chunks or blocks"
     # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
     args = [iter(iterable)] * n
     return itertools.zip_longest(*args, fillvalue=fillvalue)
 
-def parallel_f(noun_vectors, tup):
-#    noun_vectors, tup_list = tup
+files_dict = {}
+def parallel_f(noun_vectors, file_prefix, tup):
+
+    global files_dict
+
+    pid = os.getpid()
+    if not pid in files_dict:
+        files_dict[pid] = gzip.open(file_prefix+".{}.gzip".format(pid), "wt")
+        print(pid, "OPENING FILE", file_prefix+".{}.gzip".format(pid))
+
     tup_list = filter(lambda x: x is not None, tup)
-    #print(os.getpid(), "START")
-    #return [(n1, n2, 10) for n1, n2 in tup_list]
-    return [(n1, n2, 1-cosine(noun_vectors[n1], noun_vectors[n2])) for n1, n2 in tup_list]
+    for n1, n2 in tup_list:
+        print(n1, n2, 1-cosine(noun_vectors[n1], noun_vectors[n2]), file=files_dict[pid])
 
 def compute_measure(input_path, output_path, nouns_file, n_workers):
+    global files_dict
+
     os.makedirs(output_path, exist_ok=True)
 
     nouns = set()
@@ -39,18 +58,24 @@ def compute_measure(input_path, output_path, nouns_file, n_workers):
             nouns.add(line[0])
 
     nouns_per_verb = {}
+    tot_pairs = {}
     for filename in os.listdir(input_path):
         verb = filename.split(".")[-1]
         print(verb)
         nouns_per_verb[verb] = []
         with open(input_path+filename) as fin:
             for line in fin:
-                nouns_per_verb[verb].append(line.strip().split()[0])
+                word = line.strip().split()[0]
+                if all(x.isalpha() or x in ["-", "'"] for x in word):
+                    nouns_per_verb[verb].append(word)
+
+            nouns_per_verb[verb] = list(sorted(nouns_per_verb[verb]))
+            tot_pairs[verb] = (len(nouns_per_verb[verb]) * (len(nouns_per_verb[verb]) - 1)) // 2
 
 
     for algo in ["word2vec", "word2vecf"]:
         models_dir = "/extra/DSM/07_models/{}".format(algo)
-        for folder in tqdm.tqdm(os.listdir(models_dir)):
+        for folder in os.listdir(models_dir):
             print("WORKING ON FOLDER: ", folder)
             with open(models_dir + "/" + folder + "/targets_vectors.decoded") as fin_model:
                 noun_vectors = {}
@@ -71,17 +96,17 @@ def compute_measure(input_path, output_path, nouns_file, n_workers):
                 v = noun_vectors[n][-min_len:]
                 noun_vectors[n] = np.array(v)
 
-            for verb in nouns_per_verb.keys():
-                print("PROCESSING VERB ", verb)
-                with Pool(n_workers) as p:
-                    with open(output_path + algo + "." + folder + "." + verb, "w") as fout:
-                        iterator = grouper(itertools.combinations(nouns_per_verb[verb], 2), 1000000)
-                        tot = (len(nouns_per_verb[verb])*(len(nouns_per_verb[verb]) - 1))//(2*1000000)
-                        for retlist in tqdm.tqdm(p.imap(functools.partial(parallel_f, noun_vectors), iterator), total=tot+1):
-                            for n1, n2, cos in retlist:
-                                print(n1, n2, cos, file=fout)
-    #                        print("RICEVUTI RISULTATI")
-    #                        input()
+            file_prefix = output_path + algo + "." + folder
+            with Pool(n_workers) as p:
+                iterator = grouper(tuples_generator(nouns_per_verb), 500000)
+                imap_obj = p.imap(functools.partial(parallel_f, noun_vectors, file_prefix), iterator)
+
+                for x in tqdm.tqdm (imap_obj, total=sum(tot_pairs.values()) // 500000) :
+                    pass
+
+            for pid in files_dict:
+                files_dict[pid].close()
+                del files_dict[pid]
 
 
     for algo in ["SVD"]:
@@ -107,15 +132,14 @@ def compute_measure(input_path, output_path, nouns_file, n_workers):
                 v = noun_vectors[n][-min_len:]
                 noun_vectors[n] = np.array(v)
 
-                for verb in nouns_per_verb.keys():
-                    print("PROCESSING VERB ", verb)
-                    with Pool(n_workers) as p:
-                        with open(output_path + algo + "." + folder + "." + verb, "w") as fout:
-                            iterator = grouper(itertools.combinations(nouns_per_verb[verb], 2), 1000000)
-                            tot = (len(nouns_per_verb[verb]) * (len(nouns_per_verb[verb]) - 1)) // (2 * 1000000)
-                            for retlist in tqdm.tqdm(p.imap(functools.partial(parallel_f, noun_vectors), iterator),
-                                                     total=tot + 1):
-                                for n1, n2, cos in retlist:
-                                    print(n1, n2, cos, file=fout)
-        #                        print("RICEVUTI RISULTATI")
-        #                        input()
+            file_prefix = output_path + algo + "." + folder
+            with Pool(n_workers) as p:
+                iterator = grouper(tuples_generator(nouns_per_verb), 500000)
+                imap_obj = p.imap(functools.partial(parallel_f, noun_vectors, file_prefix), iterator)
+
+                for x in tqdm.tqdm(imap_obj, total=sum(tot_pairs.values()) // 500000):
+                    pass
+
+            for pid in files_dict:
+                files_dict[pid].close()
+                del files_dict[pid]
