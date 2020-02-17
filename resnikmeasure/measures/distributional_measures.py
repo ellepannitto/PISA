@@ -8,15 +8,6 @@ import functools
 import heapq
 import gzip
 
-def f(verb, output_path, algo, folder, nouns_per_verb, noun_vectors):
-    print("START", verb, output_path, algo, folder)
-    with open(output_path + algo + "." + folder + "." + verb, "w") as fout:
-        for noun1 in nouns_per_verb[verb]:
-            for noun2 in nouns_per_verb[verb]:
-                if noun1 > noun2:
-                    cos = 1 - cosine(noun_vectors[noun1], noun_vectors[noun2])
-                    print(noun1, noun2, cos, file=fout)
-    print("END", verb, output_path, algo, folder)
 
 def tuples_generator(nouns_per_verb):
     files = [itertools.combinations(nouns_per_verb[verb], 2) for verb in nouns_per_verb]
@@ -44,7 +35,7 @@ def parallel_f(noun_vectors, file_prefix, tup):
 
     tup_list = filter(lambda x: x is not None, tup)
     for n1, n2 in tup_list:
-        print(n1, n2, 1-cosine(noun_vectors[n1], noun_vectors[n2]), file=files_dict[pid])
+        print(n1, n2, "{:.4f}".format(1-cosine(noun_vectors[n1], noun_vectors[n2])), file=files_dict[pid])
 
 def compute_measure(input_path, output_path, nouns_file, n_workers):
     global files_dict
@@ -106,6 +97,7 @@ def compute_measure(input_path, output_path, nouns_file, n_workers):
 
             for pid in files_dict:
                 files_dict[pid].close()
+                print(pid, "CLOSING FILE")
                 del files_dict[pid]
 
 
@@ -142,4 +134,5 @@ def compute_measure(input_path, output_path, nouns_file, n_workers):
 
             for pid in files_dict:
                 files_dict[pid].close()
+                print(pid, "CLOSING FILE")
                 del files_dict[pid]
