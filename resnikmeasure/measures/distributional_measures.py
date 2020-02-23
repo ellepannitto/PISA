@@ -7,6 +7,8 @@ from multiprocessing import Pool
 import functools
 import heapq
 import gzip
+import collections
+import math
 
 
 def tuples_generator(nouns_per_verb):
@@ -37,7 +39,79 @@ def parallel_f(noun_vectors, file_prefix, tup):
     for n1, n2 in tup_list:
         print(n1, n2, "{:.4f}".format(1-cosine(noun_vectors[n1], noun_vectors[n2])), file=files_dict[pid])
 
-def compute_measure(input_path, output_path, nouns_file, n_workers):
+
+
+def distributional_measure(input_path, models_path, output_path, weight_fpath):
+    os.makedirs(output_path, exist_ok=True)
+
+
+    weights = {}
+    with open(weight_fpath) as fin:
+        for line in fin:
+            verb, noun, _, w = line.strip().split()
+            w = float(w)
+            if not verb in weights:
+                weights[verb] = {}
+            weights[verb][noun] = w
+
+    print("weights loaded")
+
+
+    nouns_per_verb = {}
+    for filename in os.listdir(input_path):
+        verb = filename.split(".")[-1]
+        print(verb)
+        nouns_per_verb[verb] = []
+        with open(input_path+filename) as fin:
+            for line in fin:
+                word = line.strip().split()[0]
+                if all(x.isalpha() or x in ["-", "'"] for x in word):
+                    nouns_per_verb[verb].append(word)
+
+            nouns_per_verb[verb] = list(sorted(nouns_per_verb[verb]))
+
+    print("nouns loaded")
+
+    with open(output_path+"LOG", "w") as fout:
+        for model_filename in os.listdir(models_path):
+            print("working on ", model_filename)
+            sp = collections.defaultdict(float)
+            nouns_per_verb_gen = {verb: itertools.combinations(nouns_per_verb[verb], 2) for verb in nouns_per_verb}
+            first_elements = {verb: next(x) for verb, x in nouns_per_verb_gen.items()}
+            with gzip.open(models_path+model_filename, "rt") as fin:
+                for line_no, line in enumerate(tqdm.tqdm(fin)):
+
+                    if not line_no%10000000:
+                        print(sp)
+
+                    update = []
+                    w1, w2, cos = line.strip().split()
+                    cos = float(cos)
+                    tup = (w1, w2)
+
+                    for verb in first_elements:
+                        el = first_elements[verb]
+                        if el < tup:
+                            print(tup, "not found", file=fout)
+                            update.append(verb)
+                        elif el == tup:
+                            sp[verb]+=weights[verb][el[0]]*cos
+                            sp[verb]+=weights[verb][el[1]]*cos
+                            update.append(verb)
+
+                    for v in update:
+                        try:
+                            first_elements[v] = next(nouns_per_verb_gen[v])
+                        except StopIteration:
+                            del first_elements[v]
+
+            with open(output_path+model_filename, "w") as fout_model:
+                print(model_filename, file=fout)
+                for verb in sp:
+                    print(verb, sp[verb]/len(nouns_per_verb[verb]), file=fout_model)
+
+
+def compute_cosines(input_path, output_path, nouns_file, n_workers):
     global files_dict
 
     os.makedirs(output_path, exist_ok=True)
@@ -136,3 +210,114 @@ def compute_measure(input_path, output_path, nouns_file, n_workers):
                 files_dict[pid].close()
                 print(pid, "CLOSING FILE")
                 del files_dict[pid]
+
+
+def compute_identity_weight(input_path, output_path):
+    os.makedirs(output_path, exist_ok=True)
+
+    nouns_per_verb = {}
+    tot_verb = {}
+    for filename in os.listdir(input_path):
+        verb = filename.split(".")[-1]
+        nouns_per_verb[verb] = {}
+        with open(input_path+filename) as fin:
+            for line in fin:
+                word = line.strip().split()[0]
+                if all(x.isalpha() or x in ["-", "'"] for x in word):
+                    nouns_per_verb[verb][word] = 1
+        tot_verb[verb] = sum(nouns_per_verb[verb].values())
+
+    with open(output_path+"ID.txt", "w") as fout:
+        for verb in nouns_per_verb:
+            print(verb)
+            for noun in nouns_per_verb[verb]:
+                print(verb, noun, nouns_per_verb[verb][noun], nouns_per_verb[verb][noun]/tot_verb[verb], file=fout)
+
+def compute_frequency_weight(input_path, output_path):
+    os.makedirs(output_path, exist_ok=True)
+
+    nouns_per_verb = {}
+    tot_verb = {}
+    for filename in os.listdir(input_path):
+        verb = filename.split(".")[-1]
+        nouns_per_verb[verb] = {}
+        with open(input_path+filename) as fin:
+            for line in fin:
+                word, freq = line.strip().split()
+                freq = int(freq)
+                if all(x.isalpha() or x in ["-", "'"] for x in word):
+                    nouns_per_verb[verb][word] = freq
+        tot_verb[verb] = sum(nouns_per_verb[verb].values())
+
+    with open(output_path+"FREQ.txt", "w") as fout:
+        for verb in nouns_per_verb:
+            print(verb)
+            for noun in nouns_per_verb[verb]:
+                print(verb, noun, nouns_per_verb[verb][noun], nouns_per_verb[verb][noun]/tot_verb[verb], file=fout)
+
+def compute_idf_weight(input_path, output_path):
+    os.makedirs(output_path, exist_ok=True)
+
+    nouns_verb_pairs = collections.defaultdict(list)
+    nouns_per_verb = {}
+    for filename in os.listdir(input_path):
+        verb = filename.split(".")[-1]
+        nouns_per_verb[verb] = {}
+        with open(input_path+filename) as fin:
+            for line in fin:
+                word, freq = line.strip().split()
+                if all(x.isalpha() or x in ["-", "'"] for x in word):
+                    nouns_per_verb[verb][word] = 1
+                    nouns_verb_pairs[word].append(verb)
+
+    C = sum(len(nouns_verb_pairs[word]) for word in nouns_verb_pairs)
+
+    tot_verb = {}
+    for verb in nouns_per_verb:
+        for noun in nouns_per_verb[verb]:
+            nouns_per_verb[verb][noun] = len(nouns_verb_pairs[noun])
+        tot_verb[verb] = sum(nouns_per_verb[verb].values())
+
+    with open(output_path+"IDF.txt", "w") as fout:
+        for verb in nouns_per_verb:
+            print(verb)
+            for noun in nouns_per_verb[verb]:
+                print(verb, noun, math.log(C/nouns_per_verb[verb][noun], 2), math.log(C/nouns_per_verb[verb][noun], 2)/tot_verb[verb], file=fout)
+
+def compute_entropy_weight(input_path, output_path):
+    os.makedirs(output_path, exist_ok=True)
+
+    nouns = collections.defaultdict(int)
+    nouns_per_verb = {}
+    for filename in os.listdir(input_path):
+        verb = filename.split(".")[-1]
+        nouns_per_verb[verb] = collections.defaultdict(int)
+        with open(input_path+filename) as fin:
+            for line in fin:
+                word, freq = line.strip().split()
+                freq = int(freq)
+                if all(x.isalpha() or x in ["-", "'"] for x in word):
+                    nouns_per_verb[verb][word] = freq
+                    nouns[word]+=freq
+
+    entropies = {}
+    for noun in nouns:
+        e = 0
+        for verb in nouns_per_verb:
+            p = nouns_per_verb[verb][noun]/nouns[noun]
+            if p > 0:
+                e -= p*math.log(p, 2)
+        entropies[noun] = e
+
+    tot_verb = {}
+    for verb in nouns_per_verb:
+        tot_verb[verb] = 0
+        for noun in nouns_per_verb[verb]:
+            tot_verb[verb] += entropies[noun]
+
+
+    with open(output_path+"ENTROPY.txt", "w") as fout:
+        for verb in nouns_per_verb:
+            print(verb)
+            for noun in nouns_per_verb[verb]:
+                print(verb, noun, entropies[noun], entropies[noun]/tot_verb[verb], file=fout)
