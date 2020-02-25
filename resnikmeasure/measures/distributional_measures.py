@@ -65,8 +65,7 @@ def distributional_measure(input_path, models_path, output_path, weight_fpath):
         with open(input_path+filename) as fin:
             for line in fin:
                 word = line.strip().split()[0]
-                if all(x.isalpha() or x in ["-", "'"] for x in word):
-                    nouns_per_verb[verb].append(word)
+                nouns_per_verb[verb].append(word)
 
             nouns_per_verb[verb] = list(sorted(nouns_per_verb[verb]))
 
@@ -131,8 +130,7 @@ def compute_cosines(input_path, output_path, nouns_file, n_workers):
         with open(input_path+filename) as fin:
             for line in fin:
                 word = line.strip().split()[0]
-                if all(x.isalpha() or x in ["-", "'"] for x in word):
-                    nouns_per_verb[verb].append(word)
+                nouns_per_verb[verb].append(word)
 
             nouns_per_verb[verb] = list(sorted(nouns_per_verb[verb]))
             tot_pairs[verb] = (len(nouns_per_verb[verb]) * (len(nouns_per_verb[verb]) - 1)) // 2
@@ -223,8 +221,7 @@ def compute_identity_weight(input_path, output_path):
         with open(input_path+filename) as fin:
             for line in fin:
                 word = line.strip().split()[0]
-                if all(x.isalpha() or x in ["-", "'"] for x in word):
-                    nouns_per_verb[verb][word] = 1
+                nouns_per_verb[verb][word] = 1
         tot_verb[verb] = sum(nouns_per_verb[verb].values())
 
     with open(output_path+"ID.txt", "w") as fout:
@@ -245,8 +242,7 @@ def compute_frequency_weight(input_path, output_path):
             for line in fin:
                 word, freq = line.strip().split()
                 freq = int(freq)
-                if all(x.isalpha() or x in ["-", "'"] for x in word):
-                    nouns_per_verb[verb][word] = freq
+                nouns_per_verb[verb][word] = freq
         tot_verb[verb] = sum(nouns_per_verb[verb].values())
 
     with open(output_path+"FREQ.txt", "w") as fout:
@@ -266,9 +262,8 @@ def compute_idf_weight(input_path, output_path):
         with open(input_path+filename) as fin:
             for line in fin:
                 word, freq = line.strip().split()
-                if all(x.isalpha() or x in ["-", "'"] for x in word):
-                    nouns_per_verb[verb][word] = 1
-                    nouns_verb_pairs[word].append(verb)
+                nouns_per_verb[verb][word] = 1
+                nouns_verb_pairs[word].append(verb)
 
     C = sum(len(nouns_verb_pairs[word]) for word in nouns_verb_pairs)
 
@@ -296,9 +291,8 @@ def compute_entropy_weight(input_path, output_path):
             for line in fin:
                 word, freq = line.strip().split()
                 freq = int(freq)
-                if all(x.isalpha() or x in ["-", "'"] for x in word):
-                    nouns_per_verb[verb][word] = freq
-                    nouns[word]+=freq
+                nouns_per_verb[verb][word] = freq
+                nouns[word]+=freq
 
     entropies = {}
     for noun in nouns:

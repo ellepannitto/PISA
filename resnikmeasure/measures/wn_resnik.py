@@ -19,13 +19,13 @@ def compute_measure(input_path, output_path):
                 line = line.strip().split()
                 noun, freq = line
                 freq = int(freq)
-                if all(x.isalpha() or x in ["-", "'"] for x in noun):
-                    if not noun in nouns_to_wordnet:
-                        nouns_to_wordnet[noun] = set()
-                        for synset in wordnet.synsets(noun, pos='n', lang="eng"):
-                            for el in synset.hypernym_paths():
-                                for ul in el:
-                                    nouns_to_wordnet[noun].add(ul)
+
+                if not noun in nouns_to_wordnet:
+                    nouns_to_wordnet[noun] = set()
+                    for synset in wordnet.synsets(noun, pos='n', lang="eng"):
+                        for el in synset.hypernym_paths():
+                            for ul in el:
+                                nouns_to_wordnet[noun].add(ul)
 
                     for ul in nouns_to_wordnet[noun]:
                         weighted_freq = freq / len(nouns_to_wordnet[noun])
