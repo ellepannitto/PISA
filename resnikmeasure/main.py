@@ -14,7 +14,7 @@ def _wn_resnik(args):
     output_path = args.output_dir
     input_path = args.input_dir
 
-    wn_resnik.compute_measure(input_path, output_path)
+    wn_resnik.new_compute_measure(input_path, output_path)
 
 
 def _pairwise_cosines(args):

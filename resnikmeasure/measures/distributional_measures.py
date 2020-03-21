@@ -39,6 +39,36 @@ def parallel_f(noun_vectors, file_prefix, tup):
     for n1, n2 in tup_list:
         print(n1, n2, "{:.4f}".format(1-cosine(noun_vectors[n1], noun_vectors[n2])), file=files_dict[pid])
 
+def temp_topk_distributional_measure(weight_fpath, models_path, output_path, k):
+    os.makedirs(output_path, exist_ok=True)
+
+    weights = {}
+    with open(weight_fpath) as fin:
+        for line in fin:
+            verb, noun, w, _ = line.strip().split()
+            w = float(w)
+            if not verb in weights:
+                weights[verb] = {}
+            weights[verb][noun] = w
+
+    nouns_per_verb = {}
+    for verb in weights:
+        nouns_per_verb[verb] = list(sorted(weights[verb].items(), key= lambda x: -x[1]))
+
+        if k>0: nouns_per_verb[verb] = [x[0] for x in nouns_per_verb[verb][:k]]
+        else: nouns_per_verb[verb] = [x[0] for x in nouns_per_verb[verb][k:]]
+
+    if k==300 or k==-300:
+        w = weight_fpath.split("/")[-1].split(".")[0]
+        s = "300" if k>0 else "_300"
+        os.makedirs("data/sortednouns/{}/{}".format(w,s), exist_ok=True)
+
+        for verb in nouns_per_verb:
+            print("printing verb", verb)
+            with open("data/sortednouns/{}/{}/{}.txt".format(w,s,verb), "w") as fout:
+                for noun in nouns_per_verb[verb]:
+                    print(noun, weights[verb][noun], file=fout)
+
 def topk_distributional_measure(weight_fpath, models_path, output_path, k):
     os.makedirs(output_path, exist_ok=True)
 
@@ -51,16 +81,37 @@ def topk_distributional_measure(weight_fpath, models_path, output_path, k):
                 weights[verb] = {}
             weights[verb][noun] = w
 
+    # print(len(weights))
+    # input()
+    # for verb in weights:
+    #     print(verb, len(weights[verb]))
+    # input()
+
     nouns_per_verb = {}
     for verb in weights:
         nouns_per_verb[verb] = list(sorted(weights[verb].items(), key= lambda x: -x[1]))
 
         if k>0: nouns_per_verb[verb] = [x[0] for x in nouns_per_verb[verb][:k]]
         else: nouns_per_verb[verb] = [x[0] for x in nouns_per_verb[verb][k:]]
+
+    if k == 300 or k == -300:
+        w = weight_fpath.split("/")[-1].split(".")[0]
+        s = "300" if k > 0 else "_300"
+        os.makedirs("data/sortednouns/{}/{}".format(w, s), exist_ok=True)
+
+        for verb in nouns_per_verb:
+            print("printing verb", verb)
+            with open("data/sortednouns/{}/{}/{}.txt".format(w, s, verb), "w") as fout:
+                for noun in nouns_per_verb[verb]:
+                    print(noun, weights[verb][noun], file=fout)
+
+    for verb in nouns_per_verb:
+        nouns_per_verb[verb] = list(sorted(nouns_per_verb[verb]))
     print("nouns loaded")
 
     with open(output_path+"LOG", "w") as fout:
         for model_filename in os.listdir(models_path):
+
             print("working on ", model_filename)
             sp = collections.defaultdict(float)
             n_summed = collections.defaultdict(int)
@@ -367,8 +418,8 @@ def compute_entropy_weight(input_path, output_path):
             p = nouns_per_verb[verb][noun]/nouns[noun]
             if p > 0:
                 e -= p*math.log(p, 2)
-                if e>max:
-                    max = e
+        if e>max:
+            max = e
         entropies[noun] = e
     for noun in entropies:
         entropies[noun] = -entropies[noun] + max
@@ -378,6 +429,7 @@ def compute_entropy_weight(input_path, output_path):
         tot_verb[verb] = 0
         for noun in nouns_per_verb[verb]:
             tot_verb[verb] += entropies[noun]
+
 
 
     with open(output_path+"ENTROPY.txt", "w") as fout:
