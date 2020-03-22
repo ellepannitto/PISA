@@ -1,31 +1,42 @@
 import argparse
+
 from .aux_scripts import filter_noun_files
 from .preprocess import extract
 from .measures import wn_resnik, distributional_measures
+from .utils import os_utils as outils
 
-def _extract_dobjects(args):
-    output_path = args.output_dir
+def _extract_lists(args):
+    output_path = outils.check_dir(args.output_dir)
     verbs_filepath = args.verbs_input
     corpus_dirpath = args.corpus
+    relations = args.rels
 
-    extract.extractDobj(output_path, verbs_filepath, corpus_dirpath)
+    extract.extractLists(output_path, verbs_filepath, corpus_dirpath, relations)
+
+def _filter_objectlist(args):
+    output_path = outils.check_dir(args.output_dir)
+    input_path = args.input_dir
+    threshold = args.threshold
+
+    extract.filterLists(output_path, input_path, threshold)
+
 
 def _wn_resnik(args):
-    output_path = args.output_dir
+    output_path = outils.check_dir(args.output_dir)
     input_path = args.input_dir
 
     wn_resnik.new_compute_measure(input_path, output_path)
 
 
 def _pairwise_cosines(args):
-    output_path = args.output_dir
+    output_path = outils.check_dir(args.output_dir)
     input_path = args.input_dir
     nouns_fpath = args.nouns_fpath
 
     distributional_measures.compute_cosines(input_path, output_path, nouns_fpath, args.num_workers)
 
 def _weighted_dist_measure(args):
-    output_path = args.output_dir
+    output_path = outils.check_dir(args.output_dir)
     input_path = args.input_dir
     models_path = args.models_dir
     weight_fpath = args.weight_fpath
@@ -33,7 +44,7 @@ def _weighted_dist_measure(args):
     distributional_measures.weighted_distributional_measure(input_path, models_path, output_path, weight_fpath)
 
 def _topk_dist_measure(args):
-    output_path = args.output_dir
+    output_path = outils.check_dir(args.output_dir)
     weight_fpath = args.weights_fpath
     models_path = args.models_dir
     top_k = args.top_k
@@ -43,7 +54,7 @@ def _topk_dist_measure(args):
 
 def _compute_weights(args):
     name = args.weight_name
-    output_path = args.output_dir
+    output_path = outils.check_dir(args.output_dir)
     input_path = args.input_dir
     if name == "id":
         distributional_measures.compute_identity_weight(input_path, output_path)
@@ -57,7 +68,7 @@ def _compute_weights(args):
 
 def _filter_weight(args):
     input_path = args.input_dir
-    output_path = args.output_dir
+    output_path = outils.check_dir(args.output_dir)
     weight_fpath = args.weight_fpath
     _K = args.top_k
 
@@ -80,15 +91,24 @@ def main():
                                                            'required corpora',
                                                help='set of utilities to extract the list of direct objects from'
                                                            'required corpora')
-
     parser_objectlist.add_argument("-o", "--output-dir", default="data/results/",
                                    help="path to output dir, default is data/results/")
-
     parser_objectlist.add_argument("-v", "--verbs-input", help="path to file containing verbs")
-
     parser_objectlist.add_argument("-c", "--corpus", help="path to dir containing corpus")
+    parser_objectlist.add_argument("-r", "--rels", nargs="+", required=True, help="target relations")
+    parser_objectlist.set_defaults(func=_extract_lists)
 
-    parser_objectlist.set_defaults(func=_extract_dobjects)
+    # FILTER
+    parser_filterlist = subparsers.add_parser('filter-objects', parents=[parent_parser],
+                                              description="filters list of objects based on threshold",
+                                              help = "filters list of objects based on threshold")
+    parser_filterlist.add_argument("-o", "--output-dir", default="data/results/filtered/",
+                                   help="path to output dir, default is data/results/filtered/")
+    parser_filterlist.add_argument("-i", "--input-dir", default="data/results/",
+                                   help="path to input dir, default is data/results/")
+    parser_filterlist.add_argument("-t", "--threshold", required=True, type=int,
+                                   help="minimum frequency for nouns")
+    parser_filterlist.set_defaults(func=_filter_objectlist)
 
     # MEASURES
 
