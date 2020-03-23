@@ -3,7 +3,7 @@ from nltk.corpus import wordnet
 import collections
 import math
 
-def new_compute_measure(input_path, output_path):
+def compute_measure(input_path, output_path):
     os.makedirs(output_path, exist_ok=True)
 
     nouns_per_verb = {}
@@ -29,7 +29,6 @@ def new_compute_measure(input_path, output_path):
     with open(output_path+"RESNIK_NEW.txt", "w") as fout:
         for verb in nouns_per_verb:
             print(verb, len(nouns_per_verb[verb]), tot_verbs[verb])
-            # input()
             s = 0
             for noun in nouns_per_verb[verb]:
                 p_n_v  = nouns_per_verb[verb][noun]/tot_verbs[verb]
@@ -37,25 +36,21 @@ def new_compute_measure(input_path, output_path):
 
                 s+= p_n_v*math.log(p_n_v/p_n , 2)
 
-                # print(noun, p_n_v, p_n)
-                # input()
+
             print("{} {}".format(verb, s), file=fout)
 
 
 
 
-def compute_measure(input_path, output_path):
+def compute_measure_wordnet(input_path, output_path):
     os.makedirs(output_path, exist_ok=True)
 
     nouns_to_wordnet = {}
     category_frequencies = collections.defaultdict(float)
 
     for filename in os.listdir(input_path):
-        verb = filename.split(".")[-1]
 
         with open(input_path+filename) as fin:
-            items = collections.defaultdict(float)
-            tot = 0
             for line in fin:
                 line = line.strip().split()
                 noun, freq = line
@@ -94,8 +89,5 @@ def compute_measure(input_path, output_path):
                 for ul in items:
                     p_c_v = items[ul] / tot
                     p_c = category_frequencies[ul] / tot_categories
-                    # print(ul)
-                    # print(p_c_v, p_c)
-                    # input()
                     s += p_c_v * math.log(p_c_v / p_c, 2)
                 print("{} {}".format(verb, s), file=fout)
