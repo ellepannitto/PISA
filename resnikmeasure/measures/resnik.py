@@ -1,23 +1,21 @@
-import os
 from nltk.corpus import wordnet
 import collections
 import math
 
-def compute_measure(input_path, output_path):
-    os.makedirs(output_path, exist_ok=True)
+def compute_measure(input_paths, output_path):
 
     nouns_per_verb = {}
     tot_verbs = {}
     tot_nouns = {}
-    for filename in os.listdir(input_path):
+    for filename in input_paths:
         verb = filename.split(".")[-1]
         nouns_per_verb[verb] = {}
         tot_verbs[verb] = 0
 
-        with open(input_path+filename) as fin:
+        with open(filename) as fin:
             for line in fin:
                 line = line.strip().split()
-                noun, freq = line
+                noun, freq, freq_n = line
                 freq = int(freq)
                 nouns_per_verb[verb][noun] = freq
                 tot_verbs[verb]+=freq
@@ -26,7 +24,7 @@ def compute_measure(input_path, output_path):
                 tot_nouns[noun]+=freq
 
     TOT = sum(tot_nouns.values())
-    with open(output_path+"RESNIK_NEW.txt", "w") as fout:
+    with open(output_path+"resnik_measure.no_wordnet.txt", "w") as fout:
         for verb in nouns_per_verb:
             print(verb, len(nouns_per_verb[verb]), tot_verbs[verb])
             s = 0
@@ -42,18 +40,17 @@ def compute_measure(input_path, output_path):
 
 
 
-def compute_measure_wordnet(input_path, output_path):
-    os.makedirs(output_path, exist_ok=True)
+def compute_measure_wordnet(input_paths, output_path):
 
     nouns_to_wordnet = {}
     category_frequencies = collections.defaultdict(float)
 
-    for filename in os.listdir(input_path):
+    for filename in input_paths:
 
-        with open(input_path+filename) as fin:
+        with open(filename) as fin:
             for line in fin:
                 line = line.strip().split()
-                noun, freq = line
+                noun, freq, freq_n = line
                 freq = int(freq)
 
                 if not noun in nouns_to_wordnet:
@@ -68,15 +65,15 @@ def compute_measure_wordnet(input_path, output_path):
                         category_frequencies[ul]+=weighted_freq
 
     tot_categories = sum(category_frequencies.values())
-    with open(output_path+"RESNIK.txt", "w") as fout:
-        for filename in os.listdir(input_path):
+    with open(output_path+"resnik_measure.wordnet.txt", "w") as fout:
+        for filename in input_paths:
             verb = filename.split(".")[-1]
-            with open(input_path + filename) as fin:
+            with open(filename) as fin:
                 items = collections.defaultdict(float)
                 tot = 0
                 for line in fin:
                     line = line.strip().split()
-                    noun, freq = line
+                    noun, freq, freq_n = line
                     freq = int(freq)
 
                     if noun in nouns_to_wordnet:

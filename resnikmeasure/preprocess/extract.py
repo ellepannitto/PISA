@@ -141,7 +141,7 @@ def filterLists(output_path, input_path, threshold):
 
     for filename in glob.glob(input_path+"/output_nouns.*"):
         verb = filename.split(".")[-1]
-        with open(filename) as fin, open(output_path+"/output_nouns.{}"+verb, "w") as fout:
+        with open(filename) as fin, open(output_path+"/output_nouns.{}".format(verb), "w") as fout:
             for line in fin:
                 line = line.strip()
                 f = int(line.split()[2])

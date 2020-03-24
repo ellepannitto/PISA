@@ -25,13 +25,13 @@ def _filter_objectlist(args):
 
 def _resnik(args):
     output_path = outils.check_dir(args.output_dir)
-    input_path = args.input_dir
+    input_paths = args.input_filepaths
     wn = args.wordnet
 
     if wn:
-        resnik.compute_measure_wordnet(input_path, output_path)
+        resnik.compute_measure_wordnet(input_paths, output_path)
     else:
-        resnik.compute_measure(input_path, output_path)
+        resnik.compute_measure(input_paths, output_path)
 
 
 def _pairwise_cosines(args):
@@ -125,7 +125,7 @@ def main():
     parser_resnik = subparsers.add_parser("resnik", parents=[parent_parser],
                                           description='computes standard Resnik measure',
                                           help='computes standard Resnik measure')
-    parser_resnik.add_argument("-i", "--input-dir", required=True,
+    parser_resnik.add_argument("-i", "--input-filepaths", nargs="+", required=True,
                                  help="path to input directory containing one file per verb")
     parser_resnik.add_argument("-o", "--output-dir", default="data/wn_resnik/",
                                  help="path to output directory, default is `data/wn_resnik/`")
