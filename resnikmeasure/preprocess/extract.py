@@ -3,6 +3,7 @@ import collections
 import glob
 from multiprocessing import Pool
 import functools
+import string
 
 from resnikmeasure.utils import data_utils as dutils
 
@@ -131,12 +132,13 @@ def mergeLists(dir_path):
                 print(el, counts_for_verb[el], counts["nouns"][el], file=fout)
 
 def filterLists(output_path, input_path, threshold):
+    admitted_chars = string.ascii_letters + " .-"
 
     with open(input_path+"/nouns.freq") as fin, open(output_path+"/nouns.freq", "w") as fout:
         for line in fin:
             line = line.strip()
             f = int(line.split()[1])
-            if f > threshold:
+            if f > threshold and all(c in admitted_chars for c in line[0]):
                 print(line, file=fout)
 
     for filename in glob.glob(input_path+"/output_nouns.*"):
@@ -145,6 +147,6 @@ def filterLists(output_path, input_path, threshold):
             for line in fin:
                 line = line.strip()
                 f = int(line.split()[2])
-                if f > threshold:
+                if f > threshold and all(c in admitted_chars for c in line[0]):
                     print(line, file=fout)
 

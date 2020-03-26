@@ -1,7 +1,7 @@
 import argparse
 
 from .aux_scripts import _filter_noun_files
-from .preprocess import extract
+from .preprocess import extract, cosines
 from .measures import resnik, distributional_measures
 from .utils import os_utils as outils
 
@@ -27,22 +27,23 @@ def _resnik(args):
     output_path = outils.check_dir(args.output_dir)
     input_paths = args.input_filepaths
     wn = args.wordnet
+    language = args.language_code
 
     if wn:
-        resnik.compute_measure_wordnet(input_paths, output_path)
+        resnik.compute_measure_wordnet(input_paths, output_path, language)
     else:
         resnik.compute_measure(input_paths, output_path)
 
 
 def _pairwise_cosines(args):
     output_path = outils.check_dir(args.output_dir)
-    input_path = args.input_dir
+    input_paths = args.input_filepaths
     nouns_fpath = args.nouns_fpath
     models_fpath = args.models_fpath
     num_workers = args.num_workers
 
-    distributional_measures.compute_cosines(input_path, output_path, nouns_fpath, num_workers, models_fpath)
-    distributional_measures.merge_cosines_files(output_path, models_fpath)
+    cosines.compute_cosines(input_paths, output_path, nouns_fpath, num_workers, models_fpath)
+    cosines.merge_cosines_files(output_path, models_fpath)
 
 def _compute_weights(args):
     name = args.weight_name
@@ -131,6 +132,8 @@ def main():
                                  help="path to output directory, default is `data/wn_resnik/`")
     parser_resnik.add_argument("-w", "--wordnet", action="store_true",
                                help="compute using wordnet classes")
+    parser_resnik.add_argument("-l", "--language-code", default="eng",
+                               help="wordnet language code")
     parser_resnik.set_defaults(func=_resnik)
 
 
@@ -138,7 +141,7 @@ def main():
     parser_cosines = subparsers.add_parser("cosines", parents=[parent_parser],
                                                   description='computes pairwise cosines',
                                                   help='computes pairwise cosines')
-    parser_cosines.add_argument("-i", "--input-dir", required=True,
+    parser_cosines.add_argument("-i", "--input-filepaths", nargs="+", required=True,
                                  help="path to input directory containing one file per verb")
     parser_cosines.add_argument("-o", "--output-dir", default="data/dist_measures/",
                                  help="path to output directory, default is `data/dist_measures/`")

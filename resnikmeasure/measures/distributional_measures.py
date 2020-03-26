@@ -1,10 +1,7 @@
 import os
-import numpy as np
 from scipy.spatial.distance import cosine
 import itertools
 import tqdm
-from multiprocessing import Pool
-import functools
 import heapq
 import gzip
 import collections
