@@ -1,7 +1,7 @@
 import itertools
 import contextlib
 from scipy.spatial.distance import cosine
-from multiprocessing import Pool, Manager
+from multiprocessing import Pool
 import gzip
 import heapq
 import os
@@ -73,15 +73,6 @@ def compute_cosines(input_paths, output_path, nouns_fpath, n_workers, models_fil
             imap_obj = p.imap(functools.partial(parallel_f, noun_vectors, file_prefix), iterator)
             for _ in tqdm.tqdm(imap_obj, total = sum(tot_pairs.values())//5000000):
                 pass
-            # imap_obj = p.imap(functools.partial(parallel_f, noun_vectors, file_prefix), iterator)
-
-
-        # print(files_dict)
-        # input()
-        # for pid in files_dict:
-        #     files_dict[pid].close()
-        #     print(pid, "CLOSING FILE")
-            #del files_dict[pid]
 
 
 

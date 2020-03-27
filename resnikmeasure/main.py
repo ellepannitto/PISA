@@ -1,9 +1,10 @@
 import argparse
 
 from .aux_scripts import _filter_noun_files
-from .preprocess import extract, cosines
+from .preprocess import extract, cosines, weights
 from .measures import resnik, distributional_measures
 from .utils import os_utils as outils
+
 
 def _extract_lists(args):
     output_path = outils.check_dir(args.output_dir)
@@ -14,6 +15,7 @@ def _extract_lists(args):
 
     extract.extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers)
     extract.mergeLists(output_path)
+
 
 def _filter_objectlist(args):
     output_path = outils.check_dir(args.output_dir)
@@ -45,20 +47,25 @@ def _pairwise_cosines(args):
     cosines.compute_cosines(input_paths, output_path, nouns_fpath, num_workers, models_fpath)
     cosines.merge_cosines_files(output_path, models_fpath)
 
+
 def _compute_weights(args):
     name = args.weight_name
     output_path = outils.check_dir(args.output_dir)
-    input_path = args.input_dir
+    input_paths = args.input_filepaths
+
     if name == "id":
-        distributional_measures.compute_identity_weight(input_path, output_path)
+        weights.compute_identity_weight(input_paths, output_path)
     elif name == "frequency":
-        distributional_measures.compute_frequency_weight(input_path, output_path)
+        weights.compute_frequency_weight(input_paths, output_path)
     elif name == "idf":
-        distributional_measures.compute_idf_weight(input_path, output_path)
+        weights.compute_idf_weight(input_paths, output_path)
     elif name == "entropy":
-        distributional_measures.compute_entropy_weight(input_path, output_path)
+        weights.compute_entropy_weight(input_paths, output_path, args.noun_freqs)
+    elif name == "in_entropy":
+        weights.compute_inner_entropy_weight(input_paths, output_path)
     elif name == "lmi":
-        pass
+        weights.compute_lmi_weight(input_paths, output_path, args.noun_freqs, args.verb_freqs)
+
 
 def _weighted_dist_measure(args):
     output_path = outils.check_dir(args.output_dir)
@@ -67,6 +74,7 @@ def _weighted_dist_measure(args):
     weight_fpath = args.weight_fpath
 
     distributional_measures.weighted_distributional_measure(input_path, models_path, output_path, weight_fpath)
+
 
 def _topk_dist_measure(args):
     output_path = outils.check_dir(args.output_dir)
@@ -96,10 +104,10 @@ def main():
 
     # VERB LIST
     parser_objectlist = subparsers.add_parser('extract-dobjects', parents=[parent_parser],
-                                               description='set of utilities to extract the list of direct objects from'
-                                                           ' required corpora',
-                                               help='set of utilities to extract the list of direct objects from'
-                                                    ' required corpora')
+                                              description='set of utilities to extract the list of direct objects from'
+                                                          ' required corpora',
+                                              help='set of utilities to extract the list of direct objects from'
+                                                   ' required corpora')
     parser_objectlist.add_argument("-o", "--output-dir", default="data/results/",
                                    help="path to output dir, default is data/results/")
     parser_objectlist.add_argument("-v", "--verbs-input", help="path to file containing verbs")
@@ -107,7 +115,7 @@ def main():
                                    help="path to dir containing corpus")
     parser_objectlist.add_argument("-r", "--rels", nargs="+", required=True, help="target relations")
     parser_objectlist.add_argument("-w", "--num-workers", default=1, type=int,
-                                    help="number of workers for multiprocessing")
+                                   help="number of workers for multiprocessing")
     parser_objectlist.set_defaults(func=_extract_lists)
 
     # FILTER
@@ -153,17 +161,24 @@ def main():
                                        help="number of workers for multiprocessing")
     parser_cosines.set_defaults(func=_pairwise_cosines)
 
+
+    # COMPUTE WEIGHTS
+
     parser_weights = subparsers.add_parser("weights", parents=[parent_parser],
                                             description='computes weights measures',
                                             help='computes weights measures')
-    parser_weights.add_argument("-i", "--input-dir", required=True,
+    parser_weights.add_argument("-i", "--input-filepaths", nargs="+", required=True,
                                  help="path to input directory containing one file per verb")
     parser_weights.add_argument("-o", "--output-dir", default="data/dist_measures/weights/",
                                  help="path to output directory, default is `data/dist_measures/weights/`")
-    parser_weights.add_argument("-n", "--weight-name", required=True,
-                                       help="name of chosen weight - id, frequency, idf, entropy")
+    parser_weights.add_argument("-w", "--weight-name", required=True,
+                                choices=['id', 'frequency', 'idf', 'entropy', 'in_entropy', 'lmi'],
+                                help="name of chosen weight - id, frequency, idf, entropy, lmi")
+    parser_weights.add_argument("-n", "--noun-freqs", help="path to file with noun frequencies, needed for LMI and ENTROPY")
+    parser_weights.add_argument("-v", "--verb-freqs", help="path to file with verb frequencies, needed for LMI")
     parser_weights.set_defaults(func=_compute_weights)
 
+    # WEIGHTED MEASURES
     parser_weighteddistmeasure = subparsers.add_parser("weighted-dist-measure", parents=[parent_parser],
                                                description='computes distributional measure',
                                                help='computes distributional measure')

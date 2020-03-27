@@ -48,11 +48,27 @@ def load_nouns_per_verb(input_paths):
 
     return nouns_per_verb, tot_pairs
 
+def load_nouns_per_verb_freqs(input_paths):
+
+    nouns_per_verb = {}
+    for filename in input_paths:
+        verb = filename.split(".")[-1]
+        nouns_per_verb[verb] = {}
+        print(verb)
+        with open(filename) as fin:
+            for line in fin:
+                line = line.strip().split()
+                word, f, tot_f = line
+                f = int(f)
+                tot_f = int(tot_f)
+                nouns_per_verb[verb][word] = f
+
+    return nouns_per_verb
+
 def load_vectors(model_fpath, noun_set):
     noun_vectors = {}
 
     with open(model_fpath) as fin_model:
-        noun_vectors = {}
         fin_model.readline()
         for line in fin_model:
             line = line.strip().split()
@@ -71,3 +87,17 @@ def load_vectors(model_fpath, noun_set):
         noun_vectors[n] = np.array(v)
 
     return noun_vectors
+
+
+def load_freq_dict(filepath):
+    ret = {}
+    with open(filepath) as fin:
+        for line in fin:
+            line = line.strip().split()
+            w = line[0]
+            f = int(line[1])
+            if not w in ret:
+                ret[w]=0
+            ret[w]+=f
+
+    return ret
