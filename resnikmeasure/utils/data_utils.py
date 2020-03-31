@@ -36,7 +36,7 @@ def load_nouns_per_verb(input_paths):
     tot_pairs = {}
     for filename in input_paths:
         verb = filename.split(".")[-1]
-        print(verb)
+        # print(verb)
         nouns_per_verb[verb] = []
         with open(filename) as fin:
             for line in fin:
@@ -54,7 +54,7 @@ def load_nouns_per_verb_freqs(input_paths):
     for filename in input_paths:
         verb = filename.split(".")[-1]
         nouns_per_verb[verb] = {}
-        print(verb)
+        # print(verb)
         with open(filename) as fin:
             for line in fin:
                 line = line.strip().split()
@@ -100,4 +100,15 @@ def load_freq_dict(filepath):
                 ret[w]=0
             ret[w]+=f
 
+    return ret
+
+def load_weights(filepath):
+    ret = {}
+    with open(filepath) as fin:
+        for line in fin:
+            verb, noun, _, w = line.strip().split()
+            w = float(w)
+            if not verb in ret:
+                ret[verb] = {}
+            ret[verb][noun] = w
     return ret

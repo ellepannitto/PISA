@@ -45,8 +45,6 @@ def compute_cosines(input_paths, output_path, nouns_fpath, n_workers, models_fil
     nouns_per_verb, tot_pairs = dutils.load_nouns_per_verb(input_paths)
     models = dutils.load_models_dict(models_filepath)
 
-
-
     for model_name, model_path in models.items():
 
         print("loading vectors from ", model_name)
