@@ -73,3 +73,66 @@ The `--language-code` parameter is required only if the `--wordnet` flag is used
 
 ### The distributional measures
 
+Next, you want to compute the set of measures based on distributional information. In order to do so, a preliminary
+step has to be done for efficiency reasons.
+
+Before getting to the actual computation, we need to store the pairwise cosine similarities between the nouns that we
+have extracted during the previous steps. This is a costly operation in terms of both space and time, so be prepared to 
+see this computation last for a while.
+
+```shell script
+resnikmeasure cosines
+    --input-filepaths abs_paths_to_files_with_lists \
+    --nouns-fpath abs_path_to_file_with_noun_frequencies \
+    --num-workers  number_of_worker_for_multiprocessing \
+    --models-fpath abs_path_to_file_containing_models_list \
+    --output-dir abs_path_to_output_directory
+```
+
+Another thing that we might want to pre-compute are the weights that will be used during the computation of the
+distributional measures. This will make it easier to have a qualitative understanding of what the measures do.
+
+```shell script
+resnikmeasure weights
+    --input-filepaths abs_paths_to_files_with_lists \
+    --weight-name [id|frequency|idf|entropy|in_entropy|lmi] \
+    --noun-freqs abs_path_to_file_with_noun_frequencies \
+    --verb-freqs abs_path_to_file_with_verb_frequencies \
+    --output-dir abs_path_to_output_directory
+```
+
+The `--noun-freqs` parameter is only needed for `entropy` and `lmi` computation.
+
+The `--verb-freqs` parameter is only needed for `lmi` computation.
+
+[TODO: add a description of weights]
+
+We can now turn to the computation for the actual measures. Note that they are quite time-consuming.
+
+#### Full weighted
+
+[TODO: add description]
+
+```shell script
+resnikmeasure weighted-dist-measure
+    --input-filepaths abs_paths_to_files_with_lists \
+    --models-filepaths abs_paths_to_files_containing_pairwise_cosines \
+    --weight-filepaths abs_paths_to_files_containing_weights
+    --output-dir abs_path_to_output_directory
+```
+
+#### Top/Bottom K ranked
+[TODO: add description]
+
+```shell script
+resnikmeasure topk-dist-measure
+    --input-filepaths abs_paths_to_files_with_lists \
+    --weight-filepaths abs_paths_to_files_containing_weights \
+    --models-filepaths abs_paths_to_files_containing_pairwise_cosines \
+    --top-k number_of_items_to_consider \
+    --output-dir abs_path_to_output_directory
+```
+
+If `--top-k` is given a negative value, the least significant `k` values will be considered.
+
+### Statistics

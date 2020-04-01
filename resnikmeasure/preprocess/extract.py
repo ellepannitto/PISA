@@ -169,7 +169,7 @@ def filterCoverage(output_path, input_paths, models_fpath, nouns_fpath):
     models = dutils.load_models_dict(models_fpath)
     nouns_per_verb, _ = dutils.load_nouns_per_verb(input_paths)
     nouns_per_verb_freqs = dutils.load_nouns_per_verb_freqs(input_paths)
-    nouns = dutils.load_nouns_set(nouns_fpath)
+    nouns = dutils.load_freq_dict(nouns_fpath)
 
     found_nouns_per_verb = {v: {} for v in nouns_per_verb}
     for v in found_nouns_per_verb:
@@ -187,4 +187,4 @@ def filterCoverage(output_path, input_paths, models_fpath, nouns_fpath):
         with open(output_path+"output_nouns.{}".format(verb), "w") as fout:
             for noun in found_nouns_per_verb[verb]:
                 if found_nouns_per_verb[verb][noun]:
-                    print(noun, nouns_per_verb_freqs[verb][noun], file=fout)
+                    print(noun, nouns_per_verb_freqs[verb][noun], nouns[noun], file=fout)

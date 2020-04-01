@@ -195,6 +195,7 @@ def main():
     parser_weights.set_defaults(func=_compute_weights)
 
     # WEIGHTED MEASURES
+    # TODO: multiprocess
     parser_weighteddistmeasure = subparsers.add_parser("weighted-dist-measure", parents=[parent_parser],
                                                        description='computes distributional measure',
                                                        help='computes distributional measure')
