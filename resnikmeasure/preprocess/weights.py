@@ -2,6 +2,7 @@ import math
 
 from resnikmeasure.utils import data_utils as dutils
 
+
 def compute_identity_weight(input_paths, output_path):
 
     nouns_per_verb, _ = dutils.load_nouns_per_verb(input_paths)
@@ -32,6 +33,7 @@ def compute_frequency_weight(input_paths, output_path):
                 abs_w = freq_w_nouns_per_verb[verb][noun]
                 rel_w = freq_w_nouns_per_verb[verb][noun]/tot_w_per_verb[verb]
                 print(verb, noun, abs_w, rel_w, file=fout)
+
 
 def compute_lmi_weight(input_paths, output_path, noun_freq_path, verb_freq_path):
 
@@ -72,7 +74,7 @@ def compute_idf_weight(input_paths, output_path):
     verbs_per_noun = {}
     for verb in nouns_per_verb:
         for noun in nouns_per_verb[verb]:
-            if not noun in verbs_per_noun:
+            if noun not in verbs_per_noun:
                 verbs_per_noun[noun] = []
             verbs_per_noun[noun].append(verb)
 
@@ -93,6 +95,7 @@ def compute_idf_weight(input_paths, output_path):
                 rel_w = w_nouns_per_verb[verb][noun]/tot_w_per_verb[verb]
                 print(verb, noun, abs_w, rel_w, file=fout)
 
+
 def compute_entropy_weight(input_paths, output_path, noun_freq_path):
 
     noun_freqs = dutils.load_freq_dict(noun_freq_path)
@@ -106,13 +109,12 @@ def compute_entropy_weight(input_paths, output_path, noun_freq_path):
             if noun in freq_w_nouns_per_verb[verb]:
                 p = freq_w_nouns_per_verb[verb][noun]/noun_freqs[noun]
                 if p > 0:
-                    e-= p * math.log(p, 2)
+                    e -= p * math.log(p, 2)
         for verb in ent_w_nouns_per_verb:
             ent_w_nouns_per_verb[verb][noun] = e
 
     tot_w_per_verb = {verb: sum(ent_w_nouns_per_verb[verb].values()) for verb in ent_w_nouns_per_verb}
-            # entropies[noun] = -entropies[noun] + max
-
+    # entropies[noun] = -entropies[noun] + max
 
     with open(output_path + "ENTROPY.txt", "w") as fout:
         for verb in ent_w_nouns_per_verb:
@@ -120,6 +122,7 @@ def compute_entropy_weight(input_paths, output_path, noun_freq_path):
                 abs_w = ent_w_nouns_per_verb[verb][noun]
                 rel_w = ent_w_nouns_per_verb[verb][noun] / tot_w_per_verb[verb]
                 print(verb, noun, abs_w, rel_w, file=fout)
+
 
 def compute_inner_entropy_weight(input_paths, output_path):
 
@@ -129,9 +132,9 @@ def compute_inner_entropy_weight(input_paths, output_path):
 
     for verb in freq_w_nouns_per_verb:
         for noun in freq_w_nouns_per_verb[verb]:
-            if not noun in noun_freqs:
+            if noun not in noun_freqs:
                 noun_freqs[noun] = 0
-            noun_freqs[noun]+=freq_w_nouns_per_verb[verb][noun]
+            noun_freqs[noun] += freq_w_nouns_per_verb[verb][noun]
 
     ent_w_nouns_per_verb = {verb: {} for verb in freq_w_nouns_per_verb}
     for noun in noun_freqs:
@@ -140,13 +143,12 @@ def compute_inner_entropy_weight(input_paths, output_path):
             if noun in freq_w_nouns_per_verb[verb]:
                 p = freq_w_nouns_per_verb[verb][noun]/noun_freqs[noun]
                 if p > 0:
-                    e-= p * math.log(p, 2)
+                    e -= p * math.log(p, 2)
         for verb in ent_w_nouns_per_verb:
             ent_w_nouns_per_verb[verb][noun] = e
 
     tot_w_per_verb = {verb: sum(ent_w_nouns_per_verb[verb].values()) for verb in ent_w_nouns_per_verb}
-            # entropies[noun] = -entropies[noun] + max
-
+    # entropies[noun] = -entropies[noun] + max
 
     with open(output_path + "INNER_ENTROPY.txt", "w") as fout:
         for verb in ent_w_nouns_per_verb:

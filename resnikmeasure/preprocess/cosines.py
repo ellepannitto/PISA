@@ -12,17 +12,19 @@ import uuid
 
 from resnikmeasure.utils import data_utils as dutils
 
+
 def tuples_generator(nouns_per_verb):
     files = [itertools.combinations(nouns_per_verb[verb], 2) for verb in nouns_per_verb]
     last_tuple = None
-    for tuple in heapq.merge(*files):
-        if not tuple == last_tuple:
-            yield tuple
-            last_tuple = tuple
+    for tup in heapq.merge(*files):
+        if not tup == last_tuple:
+            yield tup
+            last_tuple = tup
+
 
 def grouper(iterable, n, fillvalue=None):
-    "Collect data into fixed-length chunks or blocks"
-    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
+    """Collect data into fixed-length chunks or blocks"
+    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"""
     args = [iter(iterable)] * n
     return itertools.zip_longest(*args, fillvalue=fillvalue)
 
@@ -31,8 +33,6 @@ def parallel_f(noun_vectors, file_prefix, tup):
 
     random_id = uuid.uuid4()
     filename = file_prefix+".{}.gzip".format(random_id)
-    pid = os.getpid()
-#    print(pid, "WRITING ON FILE", file_prefix + ".{}.gzip".format(random_id))
     with gzip.open(filename, "wt") as fout:
         tup_list = filter(lambda x: x is not None, tup)
         for n1, n2 in tup_list:
@@ -69,9 +69,8 @@ def compute_cosines(input_paths, output_path, nouns_fpath, n_workers, models_fil
         with Pool(n_workers) as p:
             iterator = grouper(tuples_generator(found), 5000000)
             imap_obj = p.imap(functools.partial(parallel_f, noun_vectors, file_prefix), iterator)
-            for _ in tqdm.tqdm(imap_obj, total = sum(tot_pairs.values())//5000000):
+            for _ in tqdm.tqdm(imap_obj, total=sum(tot_pairs.values())//5000000):
                 pass
-
 
 
 def merge(dir_path, tup):
@@ -81,6 +80,7 @@ def merge(dir_path, tup):
         files = [stack.enter_context(gzip.open(fn, "rt")) for fn in files]
         with gzip.open(dir_path+'/{}.merged.gzip'.format(model), 'wt') as f:
             f.writelines(heapq.merge(*files))
+
 
 def merge_cosines_files(dir_path, models_fpath):
 

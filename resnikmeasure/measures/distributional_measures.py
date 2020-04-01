@@ -1,6 +1,4 @@
-import os
 import itertools
-import tqdm
 import gzip
 import collections
 
