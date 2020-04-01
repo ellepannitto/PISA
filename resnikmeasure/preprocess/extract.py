@@ -5,7 +5,6 @@ from multiprocessing import Pool
 import functools
 import string
 import uuid
-import itertools
 
 from resnikmeasure.utils import data_utils as dutils
 from resnikmeasure.utils import os_utils as outils

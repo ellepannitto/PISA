@@ -1,3 +1,4 @@
+import itertools
 import numpy as np
 
 def load_verbs_set(filepath):
