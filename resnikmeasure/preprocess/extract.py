@@ -9,10 +9,17 @@ import uuid
 from resnikmeasure.utils import data_utils as dutils
 from resnikmeasure.utils import os_utils as outils
 
+# TODO: add reader for corpus
+
 
 def extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers):
 
-    iterator = dutils.grouper(outils.get_filepaths(corpus_dirpaths), 10000)
+    filenames = outils.get_filepaths(corpus_dirpaths)
+    chunk_size = len(filenames) // num_workers
+    while chunk_size > 30000:
+        chunk_size = chunk_size // 2
+
+    iterator = dutils.grouper(filenames, chunk_size)
     partial = functools.partial(extractLists, output_path, verbs_filepath, relations)
 
     with Pool(num_workers) as p:
@@ -32,55 +39,57 @@ def extractLists(output_path, verbs_filepath, relations_list, filenames):
     for file_number, filename in enumerate(filenames):
         if not file_number % 3000:
             print("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
-        with open(filename) as fin:
-            sentence = {}
-            lookfor = []
-            for line in fin:
-                line = line.strip()
+        if filename is not None:
+            with open(filename) as fin:
+                sentence = {}
+                lookfor = []
+                for line in fin:
+                    line = line.strip()
 
-                if not len(line) or line.startswith("#"):
-                    if len(lookfor) > 0:
-                        for head, lemma in lookfor:
-                            if head in sentence:
-                                if sentence[head] in verbs:
-                                    freqdict[sentence[head]][lemma] += 1
-                    sentence = {}
-                    lookfor = []
+                    if not len(line) or line.startswith("#"):
+                        if len(lookfor) > 0:
+                            for head, lemma in lookfor:
+                                if head in sentence:
+                                    if sentence[head] in verbs:
+                                        freqdict[sentence[head]][lemma] += 1
+                        sentence = {}
+                        lookfor = []
 
-                else:
-                    line = line.split()
-                    if len(line) == 6:
-                        position, form, lemma, pos, _, rel = line
-                        position = int(position)
-                        rel = rel.split(",")[0].split("=")
-                        if len(rel) == 2:
-                            rel, head = rel
-                            head = int(head)
-                            if rel in relations_list and pos[0] == "N":
-                                lookfor.append((head, lemma))
-                                nouns.add(lemma)
-                            if pos[0] == "V" and lemma in verbs:
-                                verb_freqs[lemma] += 1
-                            sentence[position] = lemma
+                    else:
+                        line = line.split()
+                        if len(line) == 6:
+                            position, form, lemma, pos, _, rel = line
+                            position = int(position)
+                            rel = rel.split(",")[0].split("=")
+                            if len(rel) == 2:
+                                rel, head = rel
+                                head = int(head)
+                                if rel in relations_list and pos[0] == "N":
+                                    lookfor.append((head, lemma))
+                                    nouns.add(lemma)
+                                if pos[0] == "V" and lemma in verbs:
+                                    verb_freqs[lemma] += 1
+                                sentence[position] = lemma
 
-            if len(lookfor) > 0:
-                for head, lemma in lookfor:
-                    if head in sentence:
-                        if sentence[head] in verbs:
-                            freqdict[sentence[head]][lemma] += 1
+                if len(lookfor) > 0:
+                    for head, lemma in lookfor:
+                        if head in sentence:
+                            if sentence[head] in verbs:
+                                freqdict[sentence[head]][lemma] += 1
 
     # look for noun frequencies
     l_filenames = len(filenames)
     for file_number, filename in enumerate(filenames):
         if not file_number % 3000:
             print("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
-        with open(filename) as fin:
-            for line in fin:
-                line = line.split()
-                if len(line) == 6:
-                    position, form, lemma, pos, _, rel = line
-                    if pos[0] == "N" and lemma in nouns:
-                        noun_freqs[lemma] += 1
+        if filename is not None:
+            with open(filename) as fin:
+                for line in fin:
+                    line = line.split()
+                    if len(line) == 6:
+                        position, form, lemma, pos, _, rel = line
+                        if pos[0] == "N" and lemma in nouns:
+                            noun_freqs[lemma] += 1
 
     random_id = uuid.uuid4()
     # print verb freqs
