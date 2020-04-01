@@ -19,7 +19,7 @@ def extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers
         p.map(partial, iterator)
 
 
-def extractLists(output_path, verbs_filepath, relations_list, corpus_dirpath):
+def extractLists(output_path, verbs_filepath, relations_list, filenames):
 
     verbs = dutils.load_verbs_set(verbs_filepath)
     nouns = set()
@@ -28,12 +28,11 @@ def extractLists(output_path, verbs_filepath, relations_list, corpus_dirpath):
     freqdict = {v: collections.defaultdict(int) for v in verbs}
 
     # look for verb-noun pairs and their frequencies
-    filenames = os.listdir(corpus_dirpath)
     l_filenames = len(filenames)
     for file_number, filename in enumerate(filenames):
         if not file_number % 3000:
             print("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
-        with open(corpus_dirpath+filename) as fin:
+        with open(filename) as fin:
             sentence = {}
             lookfor = []
             for line in fin:
@@ -71,12 +70,11 @@ def extractLists(output_path, verbs_filepath, relations_list, corpus_dirpath):
                             freqdict[sentence[head]][lemma] += 1
 
     # look for noun frequencies
-    filenames = os.listdir(corpus_dirpath)
     l_filenames = len(filenames)
     for file_number, filename in enumerate(filenames):
         if not file_number % 3000:
             print("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
-        with open(corpus_dirpath+filename) as fin:
+        with open(filename) as fin:
             for line in fin:
                 line = line.split()
                 if len(line) == 6:

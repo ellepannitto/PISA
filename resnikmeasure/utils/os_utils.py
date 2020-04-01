@@ -9,6 +9,8 @@ def check_dir(path):
 
 
 def get_filepaths(dirpaths_list):
+    ret = []
     for folder in dirpaths_list:
         for filename in glob.glob(folder+"/*"):
-            yield filename
+            ret.append(filename)
+    return ret
