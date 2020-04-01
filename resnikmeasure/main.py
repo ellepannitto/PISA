@@ -4,6 +4,8 @@ from .preprocess import extract, cosines, weights
 from .measures import resnik, distributional_measures
 from .utils import os_utils as outils
 
+# TODO: change handling of output folder
+
 
 def _extract_lists(args):
     output_path = outils.check_dir(args.output_dir)

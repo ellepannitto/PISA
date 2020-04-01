@@ -4,7 +4,7 @@
 
 Under the main directory:
 ```shell script
-python3 setup.py install|develop
+python3 setup.py [install|develop]
 ```
 
 ## Run
@@ -22,10 +22,12 @@ resnikmeasure extract-dobjects \
     --output-dir abs_path_to_output_directory
 ```
 
+The verb list for Resnik original measure is in `data/verb_list_resnik.txt`
+
 The script will create, in the output directory:
-* a file ```nouns.freq``` containing the absolute frequencies of the selected verbs
-* a file ```verbs.freq``` containing the absolute frequencies of the found nouns
-* a set of files ```output_nouns.[verb]```, one for each verb, containing the list of nouns for the specific verbs 
+* a file `nouns.freq` containing the absolute frequencies of the selected verbs
+* a file `verbs.freq` containing the absolute frequencies of the found nouns
+* a set of files `output_nouns.[verb]`, one for each verb, containing the list of nouns for the specific verbs 
 with its relative frequency
 
 ### Filtering
@@ -50,6 +52,12 @@ resnikmeasure filter-coverage \
     --output-dir abs_path_to_output_directory
 ```
 
+The file containing the list of models should be formatted as follows:
+```text
+model.one.id	/abs/path/to/file/containing/one/vector/per/line
+model.two.id	/abs/path/to/file/containing/one/vector/per/line
+```
+
 ### Resnik measure
 
 Next, you can compute the standard measure proposed by Resnik, using the following command:
@@ -61,7 +69,7 @@ resnikmeasure resnik
     --output-dir abs_path_to_output_directory
 ```
 
-The ```--language-code``` parameter is required only if the ```--wordnet``` flag is used.
+The `--language-code` parameter is required only if the `--wordnet` flag is used.
 
 ### The distributional measures
 
