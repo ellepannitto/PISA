@@ -22,13 +22,6 @@ def tuples_generator(nouns_per_verb):
             last_tuple = tup
 
 
-def grouper(iterable, n, fillvalue=None):
-    """Collect data into fixed-length chunks or blocks"
-    # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"""
-    args = [iter(iterable)] * n
-    return itertools.zip_longest(*args, fillvalue=fillvalue)
-
-
 def parallel_f(noun_vectors, file_prefix, tup):
 
     random_id = uuid.uuid4()
@@ -67,7 +60,7 @@ def compute_cosines(input_paths, output_path, nouns_fpath, n_workers, models_fil
 
         file_prefix = output_path + model_name
         with Pool(n_workers) as p:
-            iterator = grouper(tuples_generator(found), 5000000)
+            iterator = dutils.grouper(tuples_generator(found), 5000000)
             imap_obj = p.imap(functools.partial(parallel_f, noun_vectors, file_prefix), iterator)
             for _ in tqdm.tqdm(imap_obj, total=sum(tot_pairs.values())//5000000):
                 pass

@@ -5,15 +5,19 @@ from multiprocessing import Pool
 import functools
 import string
 import uuid
+import itertools
 
 from resnikmeasure.utils import data_utils as dutils
+from resnikmeasure.utils import os_utils as outils
 
 
 def extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers):
+
+    iterator = dutils.grouper(outils.get_filepaths(corpus_dirpaths), 5000)
     partial = functools.partial(extractLists, output_path, verbs_filepath, relations)
 
     with Pool(num_workers) as p:
-        p.map(partial, corpus_dirpaths)
+        p.map(partial, iterator)
 
 
 def extractLists(output_path, verbs_filepath, relations_list, corpus_dirpath):

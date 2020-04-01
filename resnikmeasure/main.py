@@ -10,7 +10,7 @@ from .utils import os_utils as outils
 def _extract_lists(args):
     output_path = outils.check_dir(args.output_dir)
     verbs_filepath = args.verbs_input
-    corpus_dirpaths = args.corpus
+    corpus_dirpaths = args.corpus_dirs
     relations = args.rels
     num_workers = args.num_workers
 
@@ -113,12 +113,14 @@ def main():
     parser_objectlist.add_argument("-o", "--output-dir", default="data/results/",
                                    help="path to output dir, default is data/results/")
     parser_objectlist.add_argument("-v", "--verbs-input", help="path to file containing verbs")
-    parser_objectlist.add_argument("-c", "--corpus", nargs="+",
-                                   help="path to dir containing corpus")
+    parser_objectlist.add_argument("-c", "--corpus-dirs", nargs="+",
+                                   help="path to dirs containing corpus")
     parser_objectlist.add_argument("-r", "--rels", nargs="+", required=True, help="target relations")
     parser_objectlist.add_argument("-w", "--num-workers", default=1, type=int,
                                    help="number of workers for multiprocessing")
     parser_objectlist.set_defaults(func=_extract_lists)
+
+    # TODO: check input folder format
 
     # FILTER THRESHOLD
     parser_filterlist = subparsers.add_parser('filter-threshold', parents=[parent_parser],
