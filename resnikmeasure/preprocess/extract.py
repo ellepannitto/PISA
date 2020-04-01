@@ -13,7 +13,7 @@ from resnikmeasure.utils import os_utils as outils
 
 def extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers):
 
-    iterator = dutils.grouper(outils.get_filepaths(corpus_dirpaths), 5000)
+    iterator = dutils.grouper(outils.get_filepaths(corpus_dirpaths), 10000)
     partial = functools.partial(extractLists, output_path, verbs_filepath, relations)
 
     with Pool(num_workers) as p:
