@@ -18,7 +18,7 @@ resnikmeasure extract-dobjects \
     --verbs-input abs_path_to_verb_list \
     --corpus abs_path_to_corpus_files \
     --rels list_of_relations \
-    --workers number_of_worker_for_multiprocessing \ 
+    --num-workers number_of_worker_for_multiprocessing \ 
     --output-dir abs_path_to_output_directory
 ```
 
