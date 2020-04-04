@@ -3,6 +3,7 @@ import argparse
 from .preprocess import extract, cosines, weights
 from .measures import resnik, distributional_measures
 from .utils import os_utils as outils
+from .statistics import stats
 
 # TODO: change handling of output folder
 
@@ -94,6 +95,21 @@ def _filter_coverage(args):
     nouns_fpath = args.nouns_fpath
 
     extract.filterCoverage(output_path, input_paths, models_fpath, nouns_fpath)
+
+
+def _spearmanr(args):
+    input_paths = args.input_filepaths
+    output_path = outils.check_dir(args.output_dir)
+    resnik_model = args.resnik_model
+
+    stats.computeSpearmanr(output_path, input_paths, resnik_model)
+
+
+def _mannwhitneyup(args):
+    output_path = outils.check_dir(args.output_dir)
+    input_paths = args.input_filepaths
+
+    stats.computeMannwhitneyup(output_path, input_paths)
 
 
 def main():
@@ -226,6 +242,30 @@ def main():
                                         help="number of nouns to consider. Default is 0 meaning all will be considered."
                                              "If a negative number is given, the last k nouns will be considered")
     parser_topkdistmeasure.set_defaults(func=_topk_dist_measure)
+    
+    # STATS: SPEARMAN CORRELATION OF EACH MODEL WITH RESNIK
+    parser_spearmanr = subparsers.add_parser("spearmanr", parents=[parent_parser],
+                                                   description='computes Spearman r between each model and Resnik model',
+                                                   help='computes Spearman r between each model and Resnik model')
+    parser_spearmanr.add_argument("-r", "--resnik-model", nargs="+", required=True,
+                                        help="path to file containing the standard Resnik measure as computed before")
+    parser_spearmanr.add_argument("-i", "--input-filepaths", nargs='+', required=True,
+                                        help="path to input directory containing one file per model")
+    parser_spearmanr.add_argument("-o", "--output-dir", default="data/stats_final/",
+                                        help="path to output directory, default is "
+                                             "`data/stats_final/`")
+    parser_spearmanr.set_defaults(func=_spearmanr)
+    
+    # STATS: MANN-WHITNEY U TO SEE DIFFERENCE WITHIN EACH MODEL
+    parser_mannwhitneyup = subparsers.add_parser("mannwhitneyup", parents=[parent_parser],
+                                                   description='computes p value of Mann-Whitney U within each model',
+                                                   help='computes p value of Mann-Whitney U within each model')
+    parser_mannwhitneyup.add_argument("-i", "--input-filepaths", nargs='+', required=True,
+                                        help="path to input directory containing one file per model")
+    parser_mannwhitneyup.add_argument("-o", "--output-dir", default="data/stats_final/",
+                                        help="path to output directory, default is "
+                                             "`data/stats_final/`")
+    parser_mannwhitneyup.set_defaults(func=_mannwhitneyup)
 
     args = root_parser.parse_args()
     if "func" not in args:

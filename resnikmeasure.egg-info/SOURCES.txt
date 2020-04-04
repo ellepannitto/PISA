@@ -1,0 +1,10 @@
+README.md
+setup.py
+resnikmeasure/__init__.py
+resnikmeasure/main.py
+resnikmeasure.egg-info/PKG-INFO
+resnikmeasure.egg-info/SOURCES.txt
+resnikmeasure.egg-info/dependency_links.txt
+resnikmeasure.egg-info/entry_points.txt
+resnikmeasure.egg-info/requires.txt
+resnikmeasure.egg-info/top_level.txt
