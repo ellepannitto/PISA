@@ -1,3 +1,4 @@
+import logging
 import itertools
 import contextlib
 from scipy.spatial.distance import cosine
@@ -11,6 +12,8 @@ import tqdm
 import uuid
 
 from resnikmeasure.utils import data_utils as dutils
+
+logger = logging.getLogger(__name__)
 
 
 def tuples_generator(nouns_per_verb):
@@ -40,7 +43,7 @@ def compute_cosines(input_paths, output_path, nouns_fpath, n_workers, models_fil
 
     for model_name, model_path in models.items():
 
-        print("loading vectors from ", model_name)
+        logger.info("loading vectors from ", model_name)
 
         noun_vectors = dutils.load_vectors(model_path, nouns)
 
@@ -68,7 +71,7 @@ def compute_cosines(input_paths, output_path, nouns_fpath, n_workers, models_fil
 
 def merge(dir_path, tup):
     model, files = tup
-    print(os.getpid(), " - PROCESSING MODEL ", model)
+    logger.info(os.getpid(), " - PROCESSING MODEL ", model)
     with contextlib.ExitStack() as stack:
         files = [stack.enter_context(gzip.open(fn, "rt")) for fn in files]
         with gzip.open(dir_path+'/{}.merged.gzip'.format(model), 'wt') as f:
@@ -77,7 +80,7 @@ def merge(dir_path, tup):
 
 def merge_cosines_files(dir_path, models_fpath):
 
-    print("merging process started")
+    logger.info("merging process started")
 
     models = dutils.load_models_dict(models_fpath)
     d = {model_name: glob.glob(dir_path+model_name+"*") for model_name in models}

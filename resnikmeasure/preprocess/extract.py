@@ -1,3 +1,4 @@
+import logging
 import os
 import collections
 import glob
@@ -8,6 +9,8 @@ import uuid
 
 from resnikmeasure.utils import data_utils as dutils
 from resnikmeasure.utils import os_utils as outils
+
+logger = logging.getLogger(__name__)
 
 # TODO: add reader for corpus
 
@@ -38,7 +41,7 @@ def extractLists(output_path, verbs_filepath, relations_list, filenames):
     l_filenames = len(filenames)
     for file_number, filename in enumerate(filenames):
         if not file_number % 3000:
-            print("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
+            logger.info("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
         if filename is not None:
             with open(filename) as fin:
                 sentence = {}
@@ -81,7 +84,7 @@ def extractLists(output_path, verbs_filepath, relations_list, filenames):
     l_filenames = len(filenames)
     for file_number, filename in enumerate(filenames):
         if not file_number % 3000:
-            print("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
+            logger.info("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
         if filename is not None:
             with open(filename) as fin:
                 for line in fin:

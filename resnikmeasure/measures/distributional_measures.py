@@ -1,8 +1,11 @@
+import logging
 import itertools
 import gzip
 import collections
 
 from resnikmeasure.utils import data_utils as dutils
+
+logger = logging.getLogger(__name__)
 
 
 def weighted_distributional_measure(input_paths, models_paths, output_path, weight_fpaths):
@@ -10,15 +13,15 @@ def weighted_distributional_measure(input_paths, models_paths, output_path, weig
     weight_names = [fpath.split("/")[-1].split(".")[0] for fpath in weight_fpaths]
     weights = [dutils.load_weights(fpath) for fpath in weight_fpaths]
     weights = dict(zip(weight_names, weights))
-    print("weights loaded", weights.keys())
+    logger.info("weights loaded", weights.keys())
     nouns_per_verb, _ = dutils.load_nouns_per_verb(input_paths)
-    print("nouns loaded")
+    logger.info("nouns loaded")
 
     for model_filename in models_paths:
-        print("working on ", model_filename)
+        logger.info("working on ", model_filename)
         sp = {w: collections.defaultdict(float) for w in weights}
 
-        print("SPDICT:", sp)
+        logger.info("SPDICT:", sp)
 
         nouns_per_verb_gen = {verb: itertools.combinations(nouns_per_verb[verb], 2) for verb in nouns_per_verb}
         first_elements = {verb: next(x) for verb, x in nouns_per_verb_gen.items()}
@@ -28,7 +31,7 @@ def weighted_distributional_measure(input_paths, models_paths, output_path, weig
             for line_no, line in enumerate(fin):
 
                 if not line_no % 100000:
-                    print(line_no)
+                    logger.info(line_no)
 
                 w1, w2, cos = line.strip().split()
                 cos = float(cos)
@@ -40,13 +43,10 @@ def weighted_distributional_measure(input_paths, models_paths, output_path, weig
                     update_again = False
                     for verb in first_elements:
                         el = first_elements[verb]
-                        # print("(", verb, ")", el)
                         if el < tup:
-                            # print(verb, el, "not found")
                             update.append(verb)
                             update_again = True
                         elif el == tup:
-
                             for w in sp:
                                 sp[w][verb] += weights[w][verb][el[0]]*cos
                                 sp[w][verb] += weights[w][verb][el[1]]*cos
@@ -72,9 +72,9 @@ def topk_distributional_measure(weight_paths, models_paths, input_paths, output_
     weight_names = [fpath.split("/")[-1].split(".")[0] for fpath in weight_paths]
     weights = [dutils.load_weights(fpath) for fpath in weight_paths]
     weights = dict(zip(weight_names, weights))
-    print("weights loaded", weights.keys())
+    logger.info("weights loaded", weights.keys())
     nouns_per_verb, _ = dutils.load_nouns_per_verb(input_paths)
-    print("nouns loaded")
+    logger.info("nouns loaded")
 
     sorted_nouns_per_verb = {}
 
@@ -93,11 +93,11 @@ def topk_distributional_measure(weight_paths, models_paths, input_paths, output_
                 sorted_nouns_per_verb[w][verb] = list(sorted(sorted_nouns))  # sort again in alphabetical order
 
     for model_filename in models_paths:
-        print("working on ", model_filename)
+        logger.info("working on ", model_filename)
         sp = {w: collections.defaultdict(float) for w in weights}
         n_summed = {w: collections.defaultdict(int) for w in weights}
 
-        print("SPDICT:", sp)
+        logger.info("SPDICT:", sp)
 
         nouns_per_verb_gen = {w: {} for w in weights}
         first_elements = {w: {} for w in weights}
@@ -110,7 +110,7 @@ def topk_distributional_measure(weight_paths, models_paths, input_paths, output_
             for line_no, line in enumerate(fin):
 
                 if not line_no % 100000:
-                    print(line_no)
+                    logger.info(line_no)
 
                 w1, w2, cos = line.strip().split()
                 cos = float(cos)
@@ -123,9 +123,7 @@ def topk_distributional_measure(weight_paths, models_paths, input_paths, output_
                         update_again = False
                         for verb in first_elements[w_name]:
                             el = first_elements[w_name][verb]
-                            # print("(", verb, ")", el)
                             if el < tup:
-                                # print(verb, el, "not found")
                                 update.append(verb)
                                 update_again = True
                             elif el == tup:
@@ -143,37 +141,6 @@ def topk_distributional_measure(weight_paths, models_paths, input_paths, output_
 
         for w_name in weights:
             with open(output_path + bare_model_filename + "." + w_name, "w") as fout_model:
-                print("printing on", output_path + bare_model_filename + "." + w_name)
+                logger.info("printing on", output_path + bare_model_filename + "." + w_name)
                 for verb in sp[w_name]:
                     print(verb, sp[w_name][verb]/n_summed[w_name][verb], file=fout_model)
-
-
-# def temp_topk_distributional_measure(weight_fpath, models_path, output_path, k):
-#     os.makedirs(output_path, exist_ok=True)
-#
-#     weights = {}
-#     with open(weight_fpath) as fin:
-#         for line in fin:
-#             verb, noun, w, _ = line.strip().split()
-#             w = float(w)
-#             if not verb in weights:
-#                 weights[verb] = {}
-#             weights[verb][noun] = w
-#
-#     nouns_per_verb = {}
-#     for verb in weights:
-#         nouns_per_verb[verb] = list(sorted(weights[verb].items(), key= lambda x: -x[1]))
-#
-#         if k>0: nouns_per_verb[verb] = [x[0] for x in nouns_per_verb[verb][:k]]
-#         else: nouns_per_verb[verb] = [x[0] for x in nouns_per_verb[verb][k:]]
-#
-#     if k==300 or k==-300:
-#         w = weight_fpath.split("/")[-1].split(".")[0]
-#         s = "300" if k>0 else "_300"
-#         os.makedirs("data/sortednouns/{}/{}".format(w,s), exist_ok=True)
-#
-#         for verb in nouns_per_verb:
-#             print("printing verb", verb)
-#             with open("data/sortednouns/{}/{}/{}.txt".format(w,s,verb), "w") as fout:
-#                 for noun in nouns_per_verb[verb]:
-#                     print(noun, weights[verb][noun], file=fout)

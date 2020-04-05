@@ -1,5 +1,8 @@
+import logging
 import os
 import glob
+
+logger = logging.getLogger(__name__)
 
 
 def check_dir(path):

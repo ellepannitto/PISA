@@ -1,6 +1,9 @@
+import logging
 import math
 
 from resnikmeasure.utils import data_utils as dutils
+
+logger = logging.getLogger(__name__)
 
 
 def compute_identity_weight(input_paths, output_path):
@@ -28,7 +31,7 @@ def compute_frequency_weight(input_paths, output_path):
 
     with open(output_path+"FREQ.txt", "w") as fout:
         for verb in freq_w_nouns_per_verb:
-            print(verb)
+            logger.info(verb)
             for noun in freq_w_nouns_per_verb[verb]:
                 abs_w = freq_w_nouns_per_verb[verb][noun]
                 rel_w = freq_w_nouns_per_verb[verb][noun]/tot_w_per_verb[verb]

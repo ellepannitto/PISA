@@ -1,5 +1,9 @@
+import logging
 import itertools
 import numpy as np
+
+logger = logging.getLogger(__name__)
+
 
 def load_verbs_set(filepath):
     verbs = set()

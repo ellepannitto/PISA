@@ -1,0 +1,26 @@
+version: 1
+formatters:
+  brief:
+    format: '%(levelname)s - %(message)s'
+  simple:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: simple
+loggers:
+  resnikmeasure.measures:
+    level: INFO
+    handlers: [console]
+  resnikmeasure.preprocess:
+    level: INFO
+    handlers: [console]
+  resnikmeasure.statistics:
+    level: INFO
+    handlers: [console]
+  resnikmeasure.main:
+    level: INFO
+    handlers: [console]
+  resnikmeasure.utils:
+    level: INFO
+    handlers: [console]

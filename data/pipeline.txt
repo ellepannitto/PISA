@@ -1,0 +1,2 @@
+1. resnikmeasure extract-dobjects -o /home/ludovica.pannitto/debug/nouns -v /home/ludovica.pannitto/ResnikNew/data/verb_list_resnik.txt -c /extra/corpora/corpora-en/ukWaC/3_UD/ukwac*/ -r dobj -w 10
+2.
