@@ -18,5 +18,5 @@ setup(
         ],
     },
     install_requires=['pyyaml>=4.2b1', 'nltk>=3.2.1', 'scipy>=1.2.1', 'tqdm>=4.19.5', 'numpy>=1.16.3',
-                      'pandas>=0.23.4'],
+                      'pandas>=0.23.4', 'regex>=2020.4.4'],
 )

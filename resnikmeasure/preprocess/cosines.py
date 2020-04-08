@@ -1,8 +1,6 @@
 import logging
 import itertools
 import contextlib
-from scipy.spatial.distance import cosine
-from multiprocessing import Pool
 import gzip
 import heapq
 import os
@@ -10,6 +8,9 @@ import functools
 import glob
 import tqdm
 import uuid
+
+from scipy.spatial.distance import cosine
+from multiprocessing import Pool
 
 from resnikmeasure.utils import data_utils as dutils
 

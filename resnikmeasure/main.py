@@ -5,9 +5,8 @@ import os
 from .preprocess import extract, cosines, weights
 from .measures import resnik, distributional_measures
 from .utils import os_utils as outils
-from .statistics import stats
-
 from .utils import config_utils as cutils
+from .statistics import stats
 
 config_dict = cutils.load(os.path.join(os.path.dirname(__file__), 'logging_utils', 'logging.yml'))
 logging.config.dictConfig(config_dict)
