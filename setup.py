@@ -10,6 +10,7 @@ setup(
     license='MIT',
     packages=['resnikmeasure', 'resnikmeasure.logging_utils', 'resnikmeasure.measures',
               'resnikmeasure.preprocess', 'resnikmeasure.statistics', 'resnikmeasure.utils'],
+    package_data={'resnikmeasure': ['logging_utils/*.yml']},
     include_package_data=True,
     entry_points={
         'console_scripts': [
