@@ -3,8 +3,8 @@ from setuptools import setup
 setup(
     name='resnikmeasure',
     description='New measure',
-    author='Ludovica Pannitto',
-    author_email='ellepannitto@gmail.com',
+    authors=['Ludovica Pannitto', 'Giulia Cappelli'],
+    author_email=['ellepannitto@gmail.com', ''],
     version='0.1.0',
     license='MIT',
     packages=['resnikmeasure'],

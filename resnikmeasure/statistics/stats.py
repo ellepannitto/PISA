@@ -19,6 +19,7 @@ def computeSpearmanr(output_path, input_filepaths, resnik_model, label):
 	df_resnik = pd.read_table(resnik_model, sep=" ", names=["verb", "sps"]).sort_values(by=['verb'])
 
 	for filename in input_filepaths:
+		print(filename)
 		basename = os.path.basename(filename)
 		df_model = pd.read_table(filename, sep=" ", names=["verb", "sps"]).sort_values(by=['verb'])
 		stat, pvalue = spearmanr(df_resnik['sps'], df_model['sps'])
@@ -50,7 +51,14 @@ def computeSpearmanr(output_path, input_filepaths, resnik_model, label):
 				for weight in weights:
 					if weight in stats[algo][basename_label]:
 						stat, pvalue = stats[algo][basename_label][weight]
-						s_stat += "\t{:.3f}".format(stat)
+						sign = ''
+						if pvalue <= 0.001:
+							sign = "***"
+						elif pvalue <= 0.01:
+							sign = "**"
+						elif pvalue <= 0.05:
+							sign = "*"
+						s_stat += "\t{:.3f}{}".format(stat,sign)
 						s_pvalue += "\t{:.3f}".format(pvalue)
 					else:
 						s_stat += "\t-".format(stat)
@@ -111,7 +119,15 @@ def computeMannwhitneyup(output_path, input_paths, alternating_filepath, label):
 				for weight in weights:
 					if weight in stats[algo][basename_label]:
 						stat, pvalue = stats[algo][basename_label][weight]
-						s_stat += "\t{:.3f}".format(stat)
+						sign = ''
+						if pvalue <= 0.001:
+							sign = "***"
+						elif pvalue <= 0.01:
+							sign = "**"
+						elif pvalue <= 0.05:
+							sign = "*"
+
+						s_stat += "\t{:.3f}{}".format(stat,sign)
 						s_pvalue += "\t{:.3f}".format(pvalue)
 					else:
 						s_stat += "\t-".format(stat)

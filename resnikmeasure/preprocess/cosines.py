@@ -43,7 +43,7 @@ def compute_cosines(input_paths, output_path, nouns_fpath, n_workers, models_fil
 
     for model_name, model_path in models.items():
 
-        logger.info("loading vectors from ", model_name)
+        logger.info("loading vectors from {}".format(model_name))
 
         noun_vectors = dutils.load_vectors(model_path, nouns)
 
@@ -71,7 +71,7 @@ def compute_cosines(input_paths, output_path, nouns_fpath, n_workers, models_fil
 
 def merge(dir_path, tup):
     model, files = tup
-    logger.info(os.getpid(), " - PROCESSING MODEL ", model)
+    logger.info("{} - PROCESSING MODEL {}".format(os.getpid(), model))
     with contextlib.ExitStack() as stack:
         files = [stack.enter_context(gzip.open(fn, "rt")) for fn in files]
         with gzip.open(dir_path+'/{}.merged.gzip'.format(model), 'wt') as f:

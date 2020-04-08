@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 def extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers):
 
     filenames = outils.get_filepaths(corpus_dirpaths)
+    logger.info("Extracting data from {} files".format(len(filenames)))
     chunk_size = len(filenames) // num_workers
     while chunk_size > 30000:
         chunk_size = chunk_size // 2

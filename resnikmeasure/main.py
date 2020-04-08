@@ -157,6 +157,7 @@ def main():
                                               help="filters list of objects based on threshold")
     parser_filterlist.add_argument("-o", "--output-dir", default="data/results/filtered/",
                                    help="path to output dir, default is data/results/filtered/")
+    # TODO: change to list of files
     parser_filterlist.add_argument("-i", "--input-dir", default="data/results/",
                                    help="path to input dir, default is data/results/")
     parser_filterlist.add_argument("-t", "--threshold", required=True, type=int,
@@ -224,7 +225,6 @@ def main():
     parser_weights.set_defaults(func=_compute_weights)
 
     # WEIGHTED MEASURES
-    # TODO: multiprocess
     parser_weighteddistmeasure = subparsers.add_parser("weighted-dist-measure", parents=[parent_parser],
                                                        description='computes distributional measure',
                                                        help='computes distributional measure')

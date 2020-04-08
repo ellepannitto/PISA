@@ -30,7 +30,7 @@ def compute_measure(input_paths, output_path):
     TOT = sum(tot_nouns.values())
     with open(output_path+"resnik_measure.no_wordnet.txt", "w") as fout:
         for verb in nouns_per_verb:
-            logger.info(verb, len(nouns_per_verb[verb]), tot_verbs[verb])
+            logger.info("{} {} {}".format(verb, len(nouns_per_verb[verb]), tot_verbs[verb]))
             s = 0
             for noun in nouns_per_verb[verb]:
                 p_n_v = nouns_per_verb[verb][noun] / tot_verbs[verb]
