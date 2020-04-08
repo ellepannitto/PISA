@@ -4,3 +4,5 @@
 /data/pipeline.txt
 /resnikmeasure.egg-info/
 /.idea/
+/dist/
+/build/

@@ -3,11 +3,13 @@ from setuptools import setup
 setup(
     name='resnikmeasure',
     description='New measure',
-    authors=['Ludovica Pannitto', 'Giulia Cappelli'],
+    author=['Ludovica Pannitto', 'Giulia Cappelli'],
     author_email=['ellepannitto@gmail.com', ''],
+    url='https://github.com/ellepannitto/ResnikNew',
     version='0.1.0',
     license='MIT',
-    packages=['resnikmeasure'],
+    packages=['resnikmeasure', 'resnikmeasure.logging_utils', 'resnikmeasure.measures',
+              'resnikmeasure.preprocess', 'resnikmeasure.statistics', 'resnikmeasure.utils'],
     include_package_data=True,
     entry_points={
         'console_scripts': [
