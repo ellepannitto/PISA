@@ -1,4 +1,5 @@
 # Project exclude paths
 /venv/
-data/models.txt
-data/pipeline.txt
+/data/models.txt
+/data/pipeline.txt
+/resnikmeasure.egg-info/
