@@ -1,6 +1,0 @@
-word2vec.SGNS.w10.d300	/extra/DSM/07_models/word2vec/SGNS-w10-d300+/targets_vectors.decoded
-
-word2vecf/SGNS-w10-d300	/extra/DSM/07_models/word2vecf/SGNS-w10-d300/targets_vectors.decoded
-SGNS-synf-d300	/extra/DSM/07_models/word2vecf/SGNS-synf-d300/targets_vectors.decoded
-
-SVD-synt-c1000-d300	/extra/DSM/07_models/SVD/SVD-synt-c1000-d300/counts-ppmi-svd.decoded
