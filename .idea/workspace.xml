@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="3e980c40-c318-4027-afe1-95d1f2083300" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -175,7 +176,8 @@
       <workItem from="1586246991510" duration="201000" />
       <workItem from="1586251373992" duration="23000" />
       <workItem from="1586264963254" duration="2250000" />
-      <workItem from="1586331749529" duration="1403000" />
+      <workItem from="1586331749529" duration="1647000" />
+      <workItem from="1586333440538" duration="10000" />
     </task>
     <task id="LOCAL-00001" summary="first commit">
       <created>1580845841036</created>
@@ -457,7 +459,14 @@
       <option name="project" value="LOCAL" />
       <updated>1586333103061</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="gitignore">
+      <created>1586333161762</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1586333161762</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -477,7 +486,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="dist measures first commit" />
     <MESSAGE value="dist measures" />
     <MESSAGE value="multiprocessing for cosines" />
     <MESSAGE value="better multiprocessing for cosines" />
@@ -502,6 +510,7 @@
     <MESSAGE value="filter bugfix and readme update" />
     <MESSAGE value="logger added" />
     <MESSAGE value="multiprocessing added" />
-    <option name="LAST_COMMIT_MESSAGE" value="multiprocessing added" />
+    <MESSAGE value="gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="gitignore" />
   </component>
 </project>
