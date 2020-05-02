@@ -129,3 +129,12 @@ def grouper(iterable, n, fillvalue=None):
     # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"""
     args = [iter(iterable)] * n
     return itertools.zip_longest(*args, fillvalue=fillvalue)
+
+
+def load_alternating_verbs(fpath):
+    alternating = {}
+    with open(fpath) as fin:
+        for line in fin:
+            linesplit = line.strip().split()
+            alternating[linesplit[1]].add(linesplit[0])
+    return alternating

@@ -1,9 +1,10 @@
 import logging
 import os
-import pandas as pd
 import re
 
 from scipy.stats import spearmanr, mannwhitneyu
+
+from resnikmeasure.utils import data_utils as dutils
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +17,29 @@ def computeSpearmanr(output_path, input_filepaths, resnik_model, label):
 	stats = {}
 	weights = set()
 
-	df_resnik = pd.read_table(resnik_model, sep=" ", names=["verb", "sps"]).sort_values(by=['verb'])
+	resnik_values = {}
+	with open(resnik_model) as fin:
+		for line in fin:
+			linesplit = line.strip().split()
+			if len(line):
+				verb, value = linesplit
+				value = float(value)
+				resnik_values[verb] = value
 
 	for filename in input_filepaths:
 		print(filename)
 		basename = os.path.basename(filename)
-		df_model = pd.read_table(filename, sep=" ", names=["verb", "sps"]).sort_values(by=['verb'])
-		stat, pvalue = spearmanr(df_resnik['sps'], df_model['sps'])
+
+		model_values = {}
+		with open(filename) as fin:
+			for line in fin:
+				linesplit = line.strip().split()
+				if len(line):
+					verb, value = linesplit
+					value = float(value)
+					model_values[verb] = value
+
+		stat, pvalue = spearmanr([resnik_values[x] for x in resnik_values], [model_values[x] for x in resnik_values])
 
 		# TODO: handle splitting better
 		basename_split = re.split("[-.]", basename)
@@ -73,24 +90,40 @@ def computeMannwhitneyup(output_path, input_paths, alternating_filepath, label):
 
 	fname_stats = output_path+"{}.mannwhitney_stat.csv".format(label)
 	fname_pvalues = output_path+"{}.mannwhitney_pvalues.csv".format(label)
-	
-	df_alternating = pd.read_table(alternating_filepath, sep=" ", names=["verb", "alternating"]).sort_values(by=['verb'])
+
+	alternating_map = dutils.load_alternating_verbs(alternating_filepath)
 
 	stats = {}
 	weights = set()
 	
 	for filename in input_paths:
 		basename = os.path.basename(filename)
-		df_model = pd.read_table(filename, sep=" ", names=["verb", "sps"]).sort_values(by=['verb'])
-		df_together = pd.concat([df_model.reset_index(drop=True),
-								df_alternating['alternating'].reset_index(drop=True)], axis=1)
 
-		yes_alt = df_together['alternating'] == "yes"
-		no_alt = df_together['alternating'] == "no"
+		alternating_values = []
+		non_alternating_values = []
+
+		with open(filename) as fin:
+			for line in fin:
+				linesplit = line.strip().split()
+
+				if len(linesplit):
+					verb, value = linesplit
+					value = float(value)
+
+					if verb in alternating_map["yes"]:
+						alternating_values.append(value)
+					elif verb in alternating_map["no"]:
+						alternating_values.append(value)
+					else:
+						print("WARNING: verb not in list", verb)
+
 		stat, pvalue = -1, -1
 		# per mann-whitney serve che i valori di ciascuna colonna non siano tutti uguali
-		if df_together['sps'].nunique() != 1:
-			stat, pvalue = mannwhitneyu(df_together['sps'][yes_alt], df_together['sps'][no_alt])
+		# if df_together['sps'].nunique() != 1:
+		try:
+			stat, pvalue = mannwhitneyu(alternating_values, non_alternating_values, alternative='two-sided')
+		except:
+			pass
 
 		# TODO: handle splitting better
 		basename_split = re.split("[-.]", basename)
