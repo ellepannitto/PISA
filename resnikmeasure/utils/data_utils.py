@@ -132,7 +132,7 @@ def grouper(iterable, n, fillvalue=None):
 
 
 def load_alternating_verbs(fpath):
-    alternating = {}
+    alternating = {'yes': set(), 'no': set()}
     with open(fpath) as fin:
         for line in fin:
             linesplit = line.strip().split()
