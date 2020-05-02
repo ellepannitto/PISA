@@ -120,10 +120,11 @@ def computeMannwhitneyup(output_path, input_paths, alternating_filepath, label):
 		stat, pvalue = -1, -1
 		# per mann-whitney serve che i valori di ciascuna colonna non siano tutti uguali
 		# if df_together['sps'].nunique() != 1:
-		try:
+		# try:
+		if not all(el == alternating_values[0] for el in alternating_values):
 			stat, pvalue = mannwhitneyu(alternating_values, non_alternating_values, alternative='two-sided')
-		except:
-			pass
+		# except:
+		# 	pass
 
 		# TODO: handle splitting better
 		basename_split = re.split("[-.]", basename)
