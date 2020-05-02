@@ -113,7 +113,7 @@ def computeMannwhitneyup(output_path, input_paths, alternating_filepath, label):
 					if verb in alternating_map["yes"]:
 						alternating_values.append(value)
 					elif verb in alternating_map["no"]:
-						alternating_values.append(value)
+						non_alternating_values.append(value)
 					else:
 						print("WARNING: verb not in list", verb)
 
