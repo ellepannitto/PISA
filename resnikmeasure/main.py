@@ -2,7 +2,7 @@ import argparse
 import logging.config
 import os
 
-from .preprocess import extract, cosines, weights
+from .preprocess import extract, cosines, weights, wordnet_preprocess
 from .measures import resnik, distributional_measures
 from .utils import os_utils as outils
 from .utils import config_utils as cutils
@@ -24,7 +24,14 @@ def _extract_lists(args):
     relations = args.rels
     num_workers = args.num_workers
 
-    extract.extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers)
+    filter_subjects = args.filter_subjects
+
+    if filter_subjects:
+        extract.extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers,
+                        wordnet_preprocess.subject_is_not_artifact)
+    else:
+        extract.extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers,
+                        wordnet_preprocess.basic_function)
     extract.mergeLists(output_path)
 
 
@@ -106,6 +113,12 @@ def _filter_coverage(args):
     extract.filterCoverage(output_path, input_paths, models_fpath, nouns_fpath)
 
 
+def _filter_artifact(args):
+    output_path = outils.check_dir(args.output_dir)
+    input_path = args.input_dir
+
+    extract.filterArtifacts(output_path, input_path)
+
 def _spearmanr(args):
     output_path = outils.check_dir(args.output_dir)
     input_paths = args.input_filepaths
@@ -133,7 +146,7 @@ def main():
     subparsers = root_parser.add_subparsers(title="actions", dest="actions")
 
     # VERB LIST
-    parser_objectlist = subparsers.add_parser('extract-dobjects', parents=[parent_parser],
+    parser_objectlist = subparsers.add_parser('extract', parents=[parent_parser],
                                               description='set of utilities to extract the list of direct objects from'
                                                           ' required corpora',
                                               help='set of utilities to extract the list of direct objects from'
@@ -146,6 +159,7 @@ def main():
     parser_objectlist.add_argument("-r", "--rels", nargs="+", required=True, help="target relations")
     parser_objectlist.add_argument("-w", "--num-workers", default=1, type=int,
                                    help="number of workers for multiprocessing")
+    parser_objectlist.add_argument("--filter-subjects", action="store_true")
     parser_objectlist.set_defaults(func=_extract_lists)
 
     # TODO: check input folder format
@@ -176,6 +190,17 @@ def main():
     parser_filterweights.add_argument("-n", "--nouns-fpath", required=True,
                                       help="path to file containing required nouns")
     parser_filterweights.set_defaults(func=_filter_coverage)
+
+    # ARTIFACT FILTER
+    parser_filterartifact = subparsers.add_parser('filter-artifact', parents=[parent_parser],
+                                                  description="filters list of objects keeping only wordnet artifacts",
+                                                  help="filters list of objects keeping only wordnet artifacts")
+    parser_filterartifact.add_argument("-o", "--output-dir", default="data/results/filtered/",
+                                       help="path to output dir, default is data/results/filtered/")
+    # TODO: change to list of files
+    parser_filterartifact.add_argument("-i", "--input-dir", default="data/results/",
+                                       help="path to input dir, default is data/results/")
+    parser_filterartifact.set_defaults(func=_filter_artifact)
 
     # RESNIK MEASURE
     parser_resnik = subparsers.add_parser("resnik", parents=[parent_parser],
