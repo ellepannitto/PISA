@@ -71,17 +71,17 @@ def _compute_weights(args):
     output_path = outils.check_dir(args.output_dir)
     input_paths = args.input_filepaths
 
-    if name == "id":
+    if name == "id" or name == 'all':
         weights.compute_identity_weight(input_paths, output_path)
-    elif name == "frequency":
+    if name == "frequency" or name == 'all':
         weights.compute_frequency_weight(input_paths, output_path)
-    elif name == "idf":
+    if name == "idf" or name == 'all':
         weights.compute_idf_weight(input_paths, output_path)
-    elif name == "entropy":
+    if name == "entropy" or name == 'all':
         weights.compute_entropy_weight(input_paths, output_path, args.noun_freqs)
-    elif name == "in_entropy":
+    if name == "in_entropy" or name == 'all':
         weights.compute_inner_entropy_weight(input_paths, output_path)
-    elif name == "lmi":
+    if name == "lmi" or name == 'all':
         weights.compute_lmi_weight(input_paths, output_path, args.noun_freqs, args.verb_freqs)
 
 
@@ -241,7 +241,7 @@ def main():
     parser_weights.add_argument("-o", "--output-dir", default="data/dist_measures/weights/",
                                 help="path to output directory, default is `data/dist_measures/weights/`")
     parser_weights.add_argument("-w", "--weight-name", required=True,
-                                choices=['id', 'frequency', 'idf', 'entropy', 'in_entropy', 'lmi'],
+                                choices=['id', 'frequency', 'idf', 'entropy', 'in_entropy', 'lmi', 'all'],
                                 help="name of chosen weight - id, frequency, idf, entropy, lmi")
     parser_weights.add_argument("-n", "--noun-freqs",
                                 help="path to file with noun frequencies, needed for LMI and ENTROPY")
