@@ -254,8 +254,8 @@ def main():
                                                        help='computes distributional measure')
     parser_weighteddistmeasure.add_argument("-i", "--input-filepaths", nargs="+", required=True,
                                             help="path to input directory containing one file per verb")
-    parser_weighteddistmeasure.add_argument("-m", "--models-filepaths", nargs='+', required=True,
-                                            help="path to input directory containing one file per model")
+    parser_weighteddistmeasure.add_argument("-m", "--models-filepaths", nargs="+", required=True,
+                                            help="path to input files containing cosines for each model")
     parser_weighteddistmeasure.add_argument("-o", "--output-dir", default="data/dist_measures/",
                                             help="path to output directory, default is `data/dist_measures/`")
     parser_weighteddistmeasure.add_argument("-w", "--weight-filepaths", nargs="+", required=True,
