@@ -58,11 +58,12 @@ def extractLists(output_path, verbs_filepath, relations_list, test_subject, file
                                 subj_passed_test, wn_chain = True, []
 
                                 if head in sentence:
-                                    if sentence[head] in verbs:
+                                    lemma_head, pos_head = sentence[head]
+                                    if lemma_head in verbs and pos_head == "V":
 
                                         if head in subjects:
                                             sbj, sbj_rel = subjects[head][0]
-                                            subj_passed_test, wn_chain = test_subject(sentence[sbj], sbj_rel)
+                                            subj_passed_test, wn_chain = test_subject(sentence[sbj][0], sbj_rel)
                                         # else:
                                         #     print("HEAD NOT IN SUBJECTS {} with {} - {}".format(sentence[head],
                                         #                                                    lemma,
@@ -71,13 +72,13 @@ def extractLists(output_path, verbs_filepath, relations_list, test_subject, file
 
                                         if subj_passed_test:
                                             # logger.info("subject {} passed the test".format(sentence[sbj]))
-                                            freqdict[sentence[head]][lemma] += 1
+                                            freqdict[sentence[head][0]][lemma] += 1
                                         else:
-                                            logger.info("DISCARDING: {} {} with  {}".format(sentence[sbj],
-                                                                                            sentence[head],
+                                            logger.info("DISCARDING: {} {} with  {}".format(sentence[sbj][0],
+                                                                                            sentence[head][0],
                                                                                             lemma))
                                             # input()
-                                            logger.info("subject {} did NOT pass the test, {}".format(sentence[sbj],
+                                            logger.info("subject {} did NOT pass the test, {}".format(sentence[sbj][0],
                                                                                                         " -> ".join(
                                                                                                             wn_chain)))
                         sentence = {}
@@ -111,13 +112,15 @@ def extractLists(output_path, verbs_filepath, relations_list, test_subject, file
                                         subjects[head].append((position, rel))
                                         # print(subjects)
                                         # input()
-                                    sentence[position] = lemma
+                                    sentence[position] = (lemma, pos[0])
 
                 if len(lookfor) > 0:
                     for head, lemma in lookfor:
                         if head in sentence:
-                            if sentence[head] in verbs:
-                                freqdict[sentence[head]][lemma] += 1
+                            lemma_head, pos_head = sentence[head]
+                            if lemma_head in verbs and pos_head == "V":
+                            # if lemma_head in verbs:
+                                freqdict[sentence[head][0]][lemma] += 1
 
     # look for noun frequencies
     l_filenames = len(filenames)
