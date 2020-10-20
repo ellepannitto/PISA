@@ -1,5 +1,14 @@
 # New measure based on Resnik
 
+This repository contains the code used for experiments reported in the paper:
+
+"PISA: A measure of Preference In Selection of Arguments to model verb argument recoverability"
+
+Authors: Giulia Cappelli and Alessandro Lenci
+
+Accepted at *SEM2020
+
+
 ## Install
 
 Under the main directory:
