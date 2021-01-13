@@ -6,7 +6,24 @@ This repository contains the code used for experiments reported in the paper:
 
 Authors: Giulia Cappelli and Alessandro Lenci
 
-Accepted at *SEM2020
+Presented at *SEM2020
+
+To cite the paper:
+```
+@inproceedings{cappelli-lenci-2020-pisa,
+    title = "{PISA}: A measure of Preference In Selection of Arguments to model verb argument recoverability",
+    author = "Cappelli, Giulia  and
+      Lenci, Alessandro",
+    booktitle = "Proceedings of the Ninth Joint Conference on Lexical and Computational Semantics",
+    month = dec,
+    year = "2020",
+    address = "Barcelona, Spain (Online)",
+    publisher = "Association for Computational Linguistics",
+    url = "https://www.aclweb.org/anthology/2020.starsem-1.14",
+    pages = "131--136",
+    abstract = "Our paper offers a computational model of the semantic recoverability of verb arguments, tested in particular on direct objects and Instruments. Our fully distributional model is intended to improve on older taxonomy-based models, which require a lexicon in addition to the training corpus. We computed the selectional preferences of 99 transitive verbs and 173 Instrument verbs as the mean value of the pairwise cosines between their arguments (a weighted mean between all the arguments, or an unweighted mean with the topmost k arguments). Results show that our model can predict the recoverability of objects and Instruments, providing a similar result to that of taxonomy-based models but at a much cheaper computational cost.",
+}
+```
 
 
 ## Install
