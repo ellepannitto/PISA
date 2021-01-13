@@ -2,7 +2,7 @@
 
 This repository contains the code used for experiments reported in the paper:
 
-"PISA: A measure of Preference In Selection of Arguments to model verb argument recoverability"
+["PISA: A measure of Preference In Selection of Arguments to model verb argument recoverability"](https://www.aclweb.org/anthology/2020.starsem-1.14/)
 
 Authors: Giulia Cappelli and Alessandro Lenci
 
