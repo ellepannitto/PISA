@@ -21,16 +21,17 @@ def _extract_lists(args):
     output_path = outils.check_dir(args.output_dir)
     verbs_filepath = args.verbs_input
     corpus_dirpaths = args.corpus_dirs
+    corpus_type = args.corpus_type
     relations = args.rels
     num_workers = args.num_workers
 
     filter_subjects = args.filter_subjects
 
     if filter_subjects:
-        extract.extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers,
+        extract.extract(output_path, verbs_filepath, corpus_dirpaths, corpus_type, relations, num_workers,
                         wordnet_preprocess.subject_is_not_artifact)
     else:
-        extract.extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers,
+        extract.extract(output_path, verbs_filepath, corpus_dirpaths, corpus_type, relations, num_workers,
                         wordnet_preprocess.basic_function)
     extract.mergeLists(output_path)
 
@@ -156,6 +157,8 @@ def main():
     parser_objectlist.add_argument("-v", "--verbs-input", help="path to file containing verbs")
     parser_objectlist.add_argument("-c", "--corpus-dirs", nargs="+",
                                    help="path to dirs containing corpus")
+    parser_objectlist.add_argument("--corpus-type", default="ukwac", choices=["ukwac", "itwac"],
+                                   help="label for type of corpus format, 'ukwac' and 'itwac' are possible types")
     parser_objectlist.add_argument("-r", "--rels", nargs="+", required=True, help="target relations")
     parser_objectlist.add_argument("-w", "--num-workers", default=1, type=int,
                                    help="number of workers for multiprocessing")

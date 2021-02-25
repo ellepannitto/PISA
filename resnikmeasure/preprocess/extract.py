@@ -13,33 +13,10 @@ from resnikmeasure.utils import os_utils as outils
 
 logger = logging.getLogger(__name__)
 
+
 # TODO: add reader for corpus
+def parse_ukwac(filenames, verbs, test_subject, freqdict, relations_list, nouns, verb_freqs, noun_freqs):
 
-
-def extract(output_path, verbs_filepath, corpus_dirpaths, relations, num_workers, test_subject):
-
-    filenames = outils.get_filepaths(corpus_dirpaths)
-    logger.info("Extracting data from {} files".format(len(filenames)))
-    chunk_size = len(filenames) // num_workers
-    while chunk_size > 30000:
-        chunk_size = chunk_size // 2
-
-    iterator = dutils.grouper(filenames, chunk_size)
-    partial = functools.partial(extractLists, output_path, verbs_filepath, relations, test_subject)
-
-    with Pool(num_workers) as p:
-        p.map(partial, iterator)
-
-
-def extractLists(output_path, verbs_filepath, relations_list, test_subject, filenames):
-
-    verbs = dutils.load_verbs_set(verbs_filepath)
-    nouns = set()
-    noun_freqs = collections.defaultdict(int)
-    verb_freqs = {v: 0 for v in verbs}
-    freqdict = {v: collections.defaultdict(int) for v in verbs}
-
-    # look for verb-noun pairs and their frequencies
     l_filenames = len(filenames)
     for file_number, filename in enumerate(filenames):
         if not file_number % 3000:
@@ -135,6 +112,126 @@ def extractLists(output_path, verbs_filepath, relations_list, test_subject, file
                         position, form, lemma, pos, _, rel = line
                         if pos[0] == "N" and lemma in nouns:
                             noun_freqs[lemma] += 1
+
+
+def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns, verb_freqs, noun_freqs):
+    l_filenames = len(filenames)
+    for file_number, filename in enumerate(filenames):
+        if not file_number % 3000:
+            logger.info("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
+        if filename is not None:
+            with open(filename) as fin:
+                sentence = {}
+                lookfor = []
+                subjects = {}
+                for line in fin:
+                    line = line.strip()
+
+                    if not len(line) or line.startswith("#"):
+                        if len(lookfor) > 0:
+                            for head, lemma in lookfor:
+                                subj_passed_test, wn_chain = True, []
+
+                                if head in sentence:
+                                    lemma_head, pos_head = sentence[head]
+                                    if lemma_head in verbs and pos_head == "V":
+
+                                        if head in subjects:
+                                            sbj, sbj_rel = subjects[head][0]
+                                            subj_passed_test, wn_chain = test_subject(sentence[sbj][0], sbj_rel)
+                                        # else:
+                                        #     print("HEAD NOT IN SUBJECTS {} with {} - {}".format(sentence[head],
+                                        #                                                    lemma,
+                                        #                                                     subj_passed_test))
+                                        #     input()
+
+                                        if subj_passed_test:
+                                            # logger.info("subject {} passed the test".format(sentence[sbj]))
+                                            freqdict[sentence[head][0]][lemma] += 1
+                                        else:
+                                            logger.info("DISCARDING: {} {} with  {}".format(sentence[sbj][0],
+                                                                                            sentence[head][0],
+                                                                                            lemma))
+                                            # input()
+                                            logger.info("subject {} did NOT pass the test, {}".format(sentence[sbj][0],
+                                                                                                        " -> ".join(
+                                                                                                            wn_chain)))
+                        sentence = {}
+                        lookfor = []
+                        subjects = {}
+
+                    else:
+                        line = line.split()
+                        # print(line)
+                        if len(line) == 8:
+                            position, form, lemma, coarse_pos, pos, _, head, rel = line
+                            position = int(position)
+
+                            head = int(head)
+                            if rel in relations_list and pos[0] == "S": # serve un controllo su fine-grained pos?
+                                lookfor.append((head, lemma))
+                                nouns.add(lemma)
+
+                            if pos[0] == "V" and lemma in verbs:
+                                verb_freqs[lemma] += 1
+
+                            if rel.startswith("subj") and pos[0] == "S" and not pos in ["SP"]: # controllare se esistono altri tag per nomi propri
+                                if not head in subjects:
+                                    subjects[head] = []
+                                subjects[head].append((position, rel))
+                                sentence[position] = (lemma, pos[0])
+
+                if len(lookfor) > 0:
+                    for head, lemma in lookfor:
+                        if head in sentence:
+                            lemma_head, pos_head = sentence[head]
+                            if lemma_head in verbs and pos_head == "V":
+                            # if lemma_head in verbs:
+                                freqdict[sentence[head][0]][lemma] += 1
+
+    # look for noun frequencies
+    l_filenames = len(filenames)
+    for file_number, filename in enumerate(filenames):
+        if not file_number % 3000:
+            logger.info("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
+        if filename is not None:
+            with open(filename) as fin:
+                for line in fin:
+                    line = line.split()
+                    if len(line) == 6:
+                        position, form, lemma, pos, _, rel = line
+                        if pos[0] == "N" and lemma in nouns:
+                            noun_freqs[lemma] += 1
+
+
+def extract(output_path, verbs_filepath, corpus_dirpaths, corpus_type, relations, num_workers, test_subject):
+
+    filenames = outils.get_filepaths(corpus_dirpaths)
+    logger.info("Extracting data from {} files".format(len(filenames)))
+    chunk_size = len(filenames) // num_workers
+    while chunk_size > 30000:
+        chunk_size = chunk_size // 2
+
+    iterator = dutils.grouper(filenames, chunk_size)
+    partial = functools.partial(extractLists, output_path, verbs_filepath, relations, test_subject, corpus_type)
+
+    with Pool(num_workers) as p:
+        p.map(partial, iterator)
+
+
+def extractLists(output_path, verbs_filepath, relations_list, test_subject, corpus_type, filenames):
+
+    verbs = dutils.load_verbs_set(verbs_filepath)
+    nouns = set()
+    noun_freqs = collections.defaultdict(int)
+    verb_freqs = {v: 0 for v in verbs}
+    freqdict = {v: collections.defaultdict(int) for v in verbs}
+
+    # look for verb-noun pairs and their frequencies
+    if corpus_type == "ukwac":
+        parse_ukwac(filenames, verbs, test_subject, freqdict, relations_list, nouns, verb_freqs, noun_freqs)
+    elif corpus_type == "itwac":
+        parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns, verb_freqs, noun_freqs)
 
     random_id = uuid.uuid4()
     # print verb freqs
