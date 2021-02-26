@@ -6,6 +6,7 @@ from multiprocessing import Pool
 import functools
 import string
 import uuid
+import zipfile
 
 from resnikmeasure.preprocess import wordnet_preprocess as wn_preprocess
 from resnikmeasure.utils import data_utils as dutils
@@ -120,14 +121,17 @@ def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
         if not file_number % 3000:
             logger.info("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
         if filename is not None:
-            with open(filename) as fin:
+            file_zip = zipfile.ZipFile(filename)
+            inner_filename = file_zip.namelist()
+
+            with file_zip.open(inner_filename) as fin:
                 sentence = {}
                 lookfor = []
                 subjects = {}
                 for line in fin:
-                    line = line.strip()
+                    line = line.decode().strip()
 
-                    if not len(line) or line.startswith("#"):
+                    if not len(line) or line.startswith("<"):
                         if len(lookfor) > 0:
                             for head, lemma in lookfor:
                                 subj_passed_test, wn_chain = True, []
