@@ -122,7 +122,8 @@ def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
             logger.info("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
         if filename is not None:
             file_zip = zipfile.ZipFile(filename)
-            inner_filename = file_zip.namelist()
+            inner_filename = file_zip.namelist()[0]
+            logger.info(inner_filename)
 
             with file_zip.open(inner_filename) as fin:
                 sentence = {}
@@ -130,7 +131,6 @@ def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
                 subjects = {}
                 for line in fin:
                     line = line.decode().strip()
-
                     if not len(line) or line.startswith("<"):
                         if len(lookfor) > 0:
                             for head, lemma in lookfor:
@@ -234,6 +234,9 @@ def extractLists(output_path, verbs_filepath, relations_list, test_subject, corp
     freqdict = {v: collections.defaultdict(int) for v in verbs}
 
     # look for verb-noun pairs and their frequencies
+    logger.info(corpus_type)
+
+
     if corpus_type == "ukwac":
         parse_ukwac(filenames, verbs, test_subject, freqdict, relations_list, nouns, verb_freqs, noun_freqs)
     elif corpus_type == "itwac":
