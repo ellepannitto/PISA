@@ -205,8 +205,10 @@ def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
 
 
 def extract(output_path, verbs_filepath, corpus_dirpaths, corpus_type, relations, num_workers, test_subject):
-
-    filenames = outils.get_filepaths(corpus_dirpaths)
+    if corpus_type=="ukwac":
+        filenames = outils.get_filepaths(corpus_dirpaths)
+    else:
+        filenames = corpus_dirpaths
     logger.info("Extracting data from {} files".format(len(filenames)))
     chunk_size = len(filenames) // num_workers
     while chunk_size > 30000:

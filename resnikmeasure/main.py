@@ -156,7 +156,7 @@ def main():
                                    help="path to output dir, default is data/results/")
     parser_objectlist.add_argument("-v", "--verbs-input", help="path to file containing verbs")
     parser_objectlist.add_argument("-c", "--corpus-dirs", nargs="+",
-                                   help="path to dirs containing corpus")
+                                   help="path to dirs containing corpus for ukwac, filenames for itwac")
     parser_objectlist.add_argument("--corpus-type", default="ukwac", choices=["ukwac", "itwac"],
                                    help="label for type of corpus format, 'ukwac' and 'itwac' are possible types")
     parser_objectlist.add_argument("-r", "--rels", nargs="+", required=True, help="target relations")
