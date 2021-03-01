@@ -13,10 +13,10 @@ def subject_is_not_artifact(lemma, rel):
         return not bool_value, list
 
 
-def word_is_artifact(lemma, category='artifact', top_k=1):
+def word_is_artifact(lemma, category='artifact', top_k=1, lang='eng'):
     # print(lemma)
     hyper = lambda s: s.hypernyms()
-    synsets = wn.synsets(lemma, pos='n')[:top_k]
+    synsets = wn.synsets(lemma, lang=lang, pos='n')[:top_k]
 
     chain = [lemma]
 
@@ -31,7 +31,6 @@ def word_is_artifact(lemma, category='artifact', top_k=1):
                 return True, chain
 
     return False, chain
-    # return category in hypers
 
 
 if __name__ == "__main__":

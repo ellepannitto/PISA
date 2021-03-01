@@ -129,8 +129,14 @@ def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
                 sentence = {}
                 lookfor = []
                 subjects = {}
-                for line in fin:
-                    line = line.decode().strip()
+                for line_no, line in enumerate(fin):
+                    try:
+                        line = line.decode().strip()
+                    except Exception as err:
+                        logger.warning("ERRORE ALLA LINEA {}".format(line_no))
+                        logger.warning(err)
+                        line = ""
+
                     if not len(line) or line.startswith("<"):
                         if len(lookfor) > 0:
                             for head, lemma in lookfor:
