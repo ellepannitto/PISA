@@ -119,7 +119,7 @@ def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
     l_filenames = len(filenames)
     for file_number, filename in enumerate(filenames):
         if not file_number % 3000:
-            logger.info("PID: {} processing file n: {} out of {}".format(os.getpid(), file_number, l_filenames))
+            logger.info("PID: {} processing file n {} out of {}".format(os.getpid(), file_number, l_filenames))
         if filename is not None:
             file_zip = zipfile.ZipFile(filename)
             inner_filename = file_zip.namelist()[0]
