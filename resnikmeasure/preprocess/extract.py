@@ -116,6 +116,7 @@ def parse_ukwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
 
 
 def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns, verb_freqs, noun_freqs):
+    logger.info("ACCEPTED RELATIONS: {}".format(relations_list))
     l_filenames = len(filenames)
     for file_number, filename in enumerate(filenames):
         if not file_number % 3000:
@@ -176,8 +177,10 @@ def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
                         if len(line) == 8:
                             position, form, lemma, coarse_pos, pos, _, head, rel = line
                             position = int(position)
-
                             head = int(head)
+
+#                            logger.info("{} {} {} {} {}".format(form, lemma, pos, rel, head))
+
                             if rel in relations_list and pos[0] == "S": # serve un controllo su fine-grained pos?
                                 lookfor.append((head, lemma))
                                 nouns.add(lemma)
@@ -186,10 +189,11 @@ def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
                                 verb_freqs[lemma] += 1
 
                             if rel.startswith("subj") and pos[0] == "S" and not pos in ["SP"]: # controllare se esistono altri tag per nomi propri
+#                                logger.info("{} {} {} {} {}".format(form, lemma, pos, rel, head))
                                 if not head in subjects:
                                     subjects[head] = []
                                 subjects[head].append((position, rel))
-                                sentence[position] = (lemma, pos[0])
+                            sentence[position] = (lemma, pos[0])
 
                 if len(lookfor) > 0:
                     for head, lemma in lookfor:
