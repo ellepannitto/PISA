@@ -204,22 +204,21 @@ def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
                                 freqdict[sentence[head][0]][lemma] += 1
 
     # look for noun frequencies
-    l_filenames = len(filenames)
     for file_number, filename in enumerate(filenames):
-        file_zip = zipfile.ZipFile(filename)
-        inner_filename = file_zip.namelist()[0]
-        logger.info(inner_filename)
-
         if filename is not None:
+            file_zip = zipfile.ZipFile(filename)
+            inner_filename = file_zip.namelist()[0]
+            logger.info(inner_filename)
+
             with file_zip.open(inner_filename) as fin:
-#            with open(filename) as fin:
-                for line in fin:
+                for line_no, line in enumerate(fin):
                     try:
                         line = line.decode().strip()
                     except Exception as err:
                         logger.warning("ERRORE ALLA LINEA {}".format(line_no))
                         logger.warning(err)
                         line = ""
+                    line = line.split()
                     if len(line) == 8:
                         position, form, lemma, pos, _, rel = line
                         position, form, lemma, coarse_pos, pos, _, head, rel = line
