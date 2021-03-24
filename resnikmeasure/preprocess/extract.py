@@ -218,12 +218,14 @@ def parse_itwac(filenames, verbs, test_subject, freqdict, relations_list, nouns,
                         logger.warning("ERRORE ALLA LINEA {}".format(line_no))
                         logger.warning(err)
                         line = ""
+
                     line = line.split()
                     if len(line) == 8:
-                        position, form, lemma, pos, _, rel = line
+#                        position, form, lemma, pos, _, rel = line
                         position, form, lemma, coarse_pos, pos, _, head, rel = line
                         if pos[0] == "S" and lemma in nouns:
                             noun_freqs[lemma] += 1
+
 
 
 def extract(output_path, verbs_filepath, corpus_dirpaths, corpus_type, relations, num_workers, test_subject):
